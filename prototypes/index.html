@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grid — live streaming</title>
+  <!-- Tabler icons (webfont) + stylesheet -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.11.0/dist/tabler-icons.min.css">
+  <link rel="stylesheet" href="css/grid.css">
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ───────── SIDEBAR ───────── -->
+  <aside class="side">
+    <div class="logo">
+      <div class="logo-mark"><i class="ti ti-broadcast"></i></div>
+      <div class="logo-txt"><b>Grid</b><span>go live, get gifted</span></div>
+    </div>
+    <button class="nav-item active" data-nav="discover" onclick="go('discover')"><i class="ti ti-flame"></i><span>Discover</span></button>
+    <button class="nav-item" data-nav="dashboard" onclick="go('dashboard')"><i class="ti ti-layout-dashboard"></i><span>Creator</span></button>
+    <button class="nav-item" data-nav="me" onclick="go('me')"><i class="ti ti-user-circle"></i><span>Me</span></button>
+    <div class="side-sp"></div>
+    <div class="side-bottom">
+      <button class="nav-item" data-nav="golive" onclick="go('golive')"><i class="ti ti-video-plus"></i><span>Go live</span></button>
+      <button class="nav-item" data-nav="settings" onclick="go('settings')"><i class="ti ti-settings"></i><span>Settings</span></button>
+      <button class="nav-item" onclick="alert('Feedback & help')"><i class="ti ti-help-circle"></i><span>Help</span></button>
+    </div>
+  </aside>
+
+  <!-- ───────── MAIN ───────── -->
+  <div class="main">
+    <div class="topbar">
+      <div class="search"><i class="ti ti-search"></i><input placeholder="Search streamers, games, music..."></div>
+      <div class="top-icons">
+        <button class="icon-btn" title="Leaderboard"><i class="ti ti-trophy"></i></button>
+        <button class="icon-btn" title="Messages" onclick="alert('Inbox')"><i class="ti ti-message-circle"></i><span class="dot"></span></button>
+        <div class="bal-pill" onclick="go('wallet')"><span class="gem">💎</span><b id="topbal">1,299</b><span class="plus"><i class="ti ti-plus" style="font-size:13px"></i></span></div>
+        <div class="me-avatar" onclick="go('me')">C<span class="flag">🇨🇦</span></div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ═══ DISCOVER ═══ -->
+      <div id="s-discover" class="screen active">
+        <div class="disc-tabs">
+          <button class="disc-tab" onclick="setDtab(this)">Following<span class="lock">🔒</span></button>
+          <button class="disc-tab active" onclick="setDtab(this)">For you</button>
+          <button class="disc-tab" onclick="setDtab(this)">Explore</button>
+          <button class="disc-tab" onclick="setDtab(this)">Party</button>
+          <button class="disc-tab" onclick="setDtab(this)">Nearby</button>
+          <button class="disc-tab" onclick="setDtab(this)">Latest</button>
+        </div>
+        <div class="chips" id="chips"></div>
+        <div class="grid" id="disc-grid"></div>
+      </div>
+
+      <!-- ═══ LIVE ROOM ═══ -->
+      <div id="s-live" class="screen">
+        <div class="live-wrap">
+          <div class="stage">
+            <div class="video" id="video">
+              <div class="vbig" id="vbig">🎮</div>
+              <div class="floats" id="floats"></div>
+              <div class="v-top">
+                <div class="v-back" onclick="go('discover')"><i class="ti ti-chevron-left"></i></div>
+                <div class="v-host">
+                  <div class="v-host-av" id="vhostav">A</div>
+                  <div class="v-host-info">
+                    <b id="vhostname">Alex Kim</b>
+                    <span><i class="ti ti-antenna-bars-5" style="font-size:11px"></i> Lv 61</span>
+                  </div>
+                  <button class="v-follow" title="Follow">+</button>
+                </div>
+                <div class="v-watchers"><span class="pdot"></span><span class="mono" id="vwatch">4,821</span></div>
+              </div>
+              <div class="v-monetize" id="v-monetize"></div>
+            </div>
+            <div class="giftbar">
+              <div class="gifts-scroll" id="giftbar-scroll"></div>
+              <button class="recharge-mini" onclick="go('wallet')">Recharge</button>
+            </div>
+          </div>
+          <div class="chat">
+            <div class="chat-watchers" id="chat-watchers"></div>
+            <div class="guidelines">Be kind and respectful. Harassment, explicit content, and sharing private info are not allowed and may result in a ban. Speak in a civilized manner. 💜</div>
+            <div class="chat-msgs" id="cmsgs"></div>
+            <div class="chat-foot">
+              <div class="chat-in">
+                <input id="ctext" placeholder="Say something nice..." onkeydown="if(event.key==='Enter')sendChat()">
+                <button class="ci-btn g" onclick="openGift()" title="Send gift"><i class="ti ti-gift"></i></button>
+                <button class="ci-btn" onclick="sendChat()"><i class="ti ti-send"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ GO LIVE SETUP ═══ -->
+      <div id="s-golive" class="screen">
+        <div class="pad" style="max-width:880px">
+          <div class="ph-row"><h1>Go live</h1></div>
+          <div class="golive-wrap">
+            <div>
+              <div class="gl-preview">
+                <span class="gl-cam">📷</span>
+                <div class="gl-rec">● Camera preview</div>
+              </div>
+              <button class="gl-preview-gate" onclick="previewGate()"><i class="ti ti-eye" style="font-size:15px;vertical-align:-2px"></i> Preview the viewer unlock screen</button>
+            </div>
+            <div class="gl-form">
+              <label class="gl-label">Stream title</label>
+              <input class="gl-input" id="gl-title" placeholder="What are you streaming?">
+
+              <label class="gl-label">Category</label>
+              <select class="gl-input" id="gl-cat">
+                <option>Gaming</option><option>Music</option><option>Just Chatting</option>
+                <option>IRL</option><option>Art</option><option>Food</option><option>Fitness</option>
+              </select>
+
+              <label class="gl-label">Thumbnail</label>
+              <div class="gl-thumbs" id="gl-thumbs"></div>
+
+              <label class="gl-label">Who can watch</label>
+              <div class="seg" id="seg-vis">
+                <button class="seg-btn active" onclick="setVis(this,'public')">Public</button>
+                <button class="seg-btn" onclick="setVis(this,'followers')">Followers</button>
+                <button class="seg-btn" onclick="setVis(this,'private')">Private</button>
+              </div>
+
+              <label class="gl-label">Access &amp; monetization</label>
+              <div class="access">
+                <div class="access-opt sel" onclick="setAccess(this,'free')"><div><b>Free</b><p>Anyone can watch. Earn from gifts during the stream.</p></div><div class="radio-o on"></div></div>
+                <div class="access-opt" onclick="setAccess(this,'ppv')"><div><b>Pay-per-view</b><p>Viewers pay diamonds once to unlock entry.</p></div><div class="radio-o"></div></div>
+                <div class="access-opt" onclick="setAccess(this,'subs')"><div><b>Subscribers only</b><p>Only your subscribers can watch.</p></div><div class="radio-o"></div></div>
+              </div>
+
+              <div id="ppv-price" style="display:none">
+                <label class="gl-label">Unlock price</label>
+                <div class="price-chips" id="price-chips"></div>
+              </div>
+
+              <button class="gl-start" onclick="startStreaming()"><i class="ti ti-broadcast"></i> Start streaming</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ WALLET ═══ -->
+      <div id="s-wallet" class="screen">
+        <div class="pad">
+          <div class="ph-row"><h1>Wallet</h1><a><i class="ti ti-file-text"></i> Records</a></div>
+          <div class="cur-tabs">
+            <div class="cur-tab active" onclick="setCur(this,0)">💎 Diamonds</div>
+            <div class="cur-tab" onclick="setCur(this,1)">🪙 Earnings</div>
+          </div>
+
+          <div id="cur-diamonds">
+            <div class="bal-card">
+              <div><div class="bal-n" id="wallet-bal">1,299</div><div class="bal-l">Diamond balance <i class="ti ti-help-circle" style="font-size:14px"></i></div></div>
+              <div class="bal-gem">💎</div>
+            </div>
+            <div class="sec-l">Top up</div>
+            <div class="pkgs" id="pkgs"></div>
+            <div class="sec-l">Payment method</div>
+            <div class="pay-methods" id="pay-methods"></div>
+            <button class="recharge-btn" onclick="doRecharge()">Recharge</button>
+            <div class="sec-l" style="margin-top:24px">Recent transactions</div>
+            <div class="txns">
+              <div class="txn"><div class="txn-ic" style="background:var(--pglow)">🚀</div><div><b>Received Rocket — @dragon99</b><small>Today, 11:42 PM</small></div><div class="amt up">+500 🪙</div></div>
+              <div class="txn"><div class="txn-ic" style="background:var(--aglow)">💎</div><div><b>Recharge via Apple Pay</b><small>Today, 9:10 PM</small></div><div class="amt" style="color:var(--amber2)">+1,000 💎</div></div>
+              <div class="txn"><div class="txn-ic" style="background:rgba(16,185,129,.12)">⭐</div><div><b>Subscription — @sarah_k</b><small>Yesterday</small></div><div class="amt up">+499 🪙</div></div>
+              <div class="txn"><div class="txn-ic" style="background:rgba(245,158,11,.1)">💸</div><div><b>Withdrawal to PayPal</b><small>June 18</small></div><div class="amt" style="color:var(--t2)">−20,000 🪙</div></div>
+            </div>
+          </div>
+
+          <div id="cur-earnings" style="display:none">
+            <div class="bal-card" style="background:linear-gradient(120deg,#10B981,#059669)">
+              <div><div class="bal-n">48,250</div><div class="bal-l">Coins earned · ≈ $482.50</div></div>
+              <div class="bal-gem">🪙</div>
+            </div>
+            <div class="sec-l">Withdraw to</div>
+            <div class="pay-methods">
+              <div class="pay-m"><span class="pm-ico">🅿️</span><div><b style="font-size:13px">PayPal</b><small style="font-size:11px;color:var(--t2)">alex@email.com · Connected</small></div><div class="pm-radio"></div></div>
+              <div class="pay-m"><span class="pm-ico">🏦</span><div><b style="font-size:13px">Bank transfer</b><small style="font-size:11px;color:var(--t2)">••••4821 · Connected</small></div><div class="pm-radio"></div></div>
+              <div class="pay-m" style="border-style:dashed;opacity:.7"><span class="pm-ico">＋</span><div><b style="font-size:13px">Add Stripe / Wise</b></div></div>
+            </div>
+            <button class="recharge-btn" style="background:linear-gradient(120deg,#10B981,#059669)">Withdraw earnings</button>
+            <div class="set-row" style="margin-top:14px"><div><b>Conversion rate</b><p>100 coins = $1.00 · Platform keeps 30% of gift value · Payouts process in 2–5 business days.</p></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ ME / PROFILE ═══ -->
+      <div id="s-me" class="screen">
+        <div class="pad">
+          <div class="prof-head">
+            <div class="prof-av">C<span class="flag">🇨🇦</span></div>
+            <div style="flex:1;min-width:0">
+              <div class="prof-name">Central <span class="prof-id">ID: 32217964 <i class="ti ti-copy" style="font-size:12px"></i></span></div>
+              <div class="badges">
+                <span class="lvl-badge" style="background:linear-gradient(135deg,#3B82F6,#8B5CF6)"><i class="ti ti-diamond" style="font-size:11px"></i> 31</span>
+                <span class="lvl-badge" style="background:linear-gradient(135deg,#10B981,#2DD4BF)"><i class="ti ti-broadcast" style="font-size:11px"></i> 3</span>
+              </div>
+              <div class="prof-stats">
+                <span><b>9</b> Following</span><span><b>5</b> Followers</span><span><b>0</b> Received</span><span><b>1</b> Sent</span>
+              </div>
+              <div class="prof-loc"><i class="ti ti-map-pin"></i> Canada</div>
+            </div>
+            <button class="edit-btn" onclick="openEdit()"><i class="ti ti-edit"></i> Edit</button>
+          </div>
+          <div class="quick-links">
+            <div class="ql" onclick="go('wallet')"><i class="ti ti-wallet"></i><span>Wallet</span></div>
+            <div class="ql" onclick="alert('Your gift backpack')"><i class="ti ti-backpack"></i><span>Backpack</span></div>
+            <div class="ql" onclick="alert('Your supporters')"><i class="ti ti-heart-handshake"></i><span>Supporters</span></div>
+          </div>
+          <div class="sec-l">Profile</div>
+          <div class="prof-fields">
+            <div class="pf-row"><span class="k">Name</span><span class="v">Central</span></div>
+            <div class="pf-row"><span class="k">Gender</span><span class="v">Male</span></div>
+            <div class="pf-row"><span class="k">Birthday</span><span class="v">05 / 31 / 1995</span></div>
+            <div class="pf-row"><span class="k">Self introduction</span><span class="v" style="color:var(--t3)">Add a bio →</span></div>
+            <div class="pf-row"><span class="k">Current residence</span><span class="v">Canada</span></div>
+            <div class="pf-row"><span class="k">Hobbies</span><span class="v">Gaming, music</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ CREATOR DASHBOARD ═══ -->
+      <div id="s-dashboard" class="screen">
+        <div class="pad">
+          <div class="ph-row"><h1>Creator dashboard</h1>
+            <button class="recharge-mini" style="background:var(--purple);padding:9px 18px" onclick="go('golive')"><i class="ti ti-broadcast" style="font-size:13px;vertical-align:-1px"></i> Go live</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-c"><div class="sl">This month</div><div class="sv mono" style="color:var(--amber2)">$1,284</div><div class="sc up">↑ 24% vs last</div></div>
+            <div class="stat-c"><div class="sl">Followers</div><div class="sv mono">12.4K</div><div class="sc up">↑ 340 this week</div></div>
+            <div class="stat-c"><div class="sl">Subscribers</div><div class="sv mono">218</div><div class="sc up">↑ 18 this month</div></div>
+            <div class="stat-c"><div class="sl">Peak viewers</div><div class="sv mono">6,102</div><div class="sc" style="color:var(--t2)">Last stream</div></div>
+          </div>
+          <div class="golive-banner" onclick="go('golive')">
+            <div><b>● Start streaming now</b><p>Set your title, category, and access — then go live</p></div>
+            <i class="ti ti-arrow-right" style="font-size:20px;color:rgba(255,255,255,.5)"></i>
+          </div>
+          <div class="two">
+            <div class="card">
+              <div class="card-h">Recent earnings <a onclick="go('wallet')">Wallet</a></div>
+              <div class="rrow"><span class="re">🚀</span><div><b>Rocket from @dragon99</b><small>2 hrs ago</small></div><span class="rv">+$50.00</span></div>
+              <div class="rrow"><span class="re">⭐</span><div><b>New sub @sarah_k</b><small>5 hrs ago</small></div><span class="rv">+$4.99</span></div>
+              <div class="rrow"><span class="re">👑</span><div><b>Crown from @jace</b><small>Yesterday</small></div><span class="rv">+$1.99</span></div>
+              <div class="rrow"><span class="re">📹</span><div><b>VOD pay-per-view ×3</b><small>Yesterday</small></div><span class="rv">+$14.97</span></div>
+            </div>
+            <div class="card">
+              <div class="card-h">Revenue breakdown</div>
+              <div class="bar"><div class="bar-l"><span>Gifts &amp; stickers</span><span style="color:var(--purple2);font-weight:600">62%</span></div><div class="bar-t"><div class="bar-f" style="width:62%;background:var(--purple)"></div></div></div>
+              <div class="bar"><div class="bar-l"><span>Subscriptions</span><span style="color:var(--amber2);font-weight:600">24%</span></div><div class="bar-t"><div class="bar-f" style="width:24%;background:var(--amber)"></div></div></div>
+              <div class="bar"><div class="bar-l"><span>Pay-per-view</span><span style="color:var(--green);font-weight:600">14%</span></div><div class="bar-t"><div class="bar-f" style="width:14%;background:var(--green)"></div></div></div>
+              <div class="card-h" style="margin:16px 0 11px">Top gifters</div>
+              <div class="rrow"><span class="re">🥇</span><div><b>@dragon99</b></div><span class="rv">$186</span></div>
+              <div class="rrow"><span class="re">🥈</span><div><b>@jace_live</b></div><span class="rv">$94</span></div>
+              <div class="rrow"><span class="re">🥉</span><div><b>@sarah_k</b></div><span class="rv">$67</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ SETTINGS ═══ -->
+      <div id="s-settings" class="screen">
+        <div class="set-wrap">
+          <div class="set-nav">
+            <div class="set-nav-item active" onclick="setSet(this,'security')"><div class="l"><i class="ti ti-shield-lock"></i> Account security</div><i class="ti ti-chevron-right" style="font-size:14px"></i></div>
+            <div class="set-nav-item" onclick="setSet(this,'privacy')"><div class="l"><i class="ti ti-lock"></i> Privacy</div><i class="ti ti-chevron-right" style="font-size:14px"></i></div>
+            <div class="set-nav-item" onclick="setSet(this,'content')"><div class="l"><i class="ti ti-adjustments"></i> Content preferences</div><i class="ti ti-chevron-right" style="font-size:14px"></i></div>
+            <div class="set-nav-item" onclick="setSet(this,'terms')"><div class="l"><i class="ti ti-file-text"></i> Terms &amp; policies</div><i class="ti ti-chevron-right" style="font-size:14px"></i></div>
+          </div>
+          <div class="set-body">
+            <div id="set-security">
+              <div class="safety-banner"><b>Very low level of safety</b><i class="ti ti-shield-check" style="font-size:38px;color:rgba(255,255,255,.85)"></i></div>
+              <div class="set-row"><div><b>Bind phone number</b></div><span class="act">Bind →</span></div>
+              <div class="set-row"><div><b>Bind email</b></div><span class="act">Bind →</span></div>
+              <div class="set-row"><div><b>Bind wallet</b><p>Binding helps prevent account loss</p></div><span class="act">Bind →</span></div>
+              <div class="set-row"><div><b>Set login password</b></div><span class="act">Set →</span></div>
+              <div class="set-row"><div><b>Set payment password</b></div><span class="act">Set →</span></div>
+            </div>
+            <div id="set-privacy" style="display:none">
+              <div class="set-row"><div><b>Who can message me</b></div><i class="ti ti-chevron-right act"></i></div>
+              <div class="set-row"><div><b>Private live invitations</b></div><i class="ti ti-chevron-right act"></i></div>
+              <div class="set-row"><div><b>Show my location</b><p>Display your region on your profile</p></div><button class="tgl on" onclick="this.classList.toggle('on')"></button></div>
+              <div class="set-row"><div><b>Blacklist</b><p>Manage blocked accounts</p></div><i class="ti ti-chevron-right act"></i></div>
+              <div class="set-row"><div><b>Not interested in</b></div><i class="ti ti-chevron-right act"></i></div>
+            </div>
+            <div id="set-content" style="display:none">
+              <div class="set-row" onclick="pickMode(this)"><div><b>Restricted mode</b><p>AI hides potentially sensitive content. No filter is 100% accurate.</p></div><div class="radio-o"></div></div>
+              <div class="set-row" onclick="pickMode(this)"><div><b>Warning mode</b><p>Sensitive content is hidden behind a filter that needs two taps to reveal.</p></div><div class="radio-o on"></div></div>
+              <div class="set-row" onclick="pickMode(this)"><div><b>All content</b><p>You'll see everything, including mature streams.</p></div><div class="radio-o"></div></div>
+            </div>
+            <div id="set-terms" style="display:none">
+              <div class="set-row"><div><b>Terms of Service</b></div><i class="ti ti-chevron-right act"></i></div>
+              <div class="set-row"><div><b>Privacy Policy</b></div><i class="ti ti-chevron-right act"></i></div>
+              <div class="set-row"><div><b>Child Safety Policy</b></div><i class="ti ti-chevron-right act"></i></div>
+              <div class="set-row"><div><b>Anti-Bullying Policy</b></div><i class="ti ti-chevron-right act"></i></div>
+              <div class="set-row"><div><b>Copyright</b></div><i class="ti ti-chevron-right act"></i></div>
+              <div class="set-row" style="margin-top:8px"><div><b style="color:var(--red)">Sign out</b></div><span class="act" style="color:var(--red)" onclick="openLogin()">Sign out →</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ───────── GIFT MODAL ───────── -->
+  <div class="ov gift-ov" id="gift-ov" onclick="if(event.target===this)closeGift()">
+    <div class="gift-sheet">
+      <div class="sheet-bar"></div>
+      <div class="sheet-h"><h3>🎁 Send a gift to <span id="gift-host">Alex Kim</span></h3><button class="x" onclick="closeGift()">✕</button></div>
+      <div class="gift-grid" id="gift-grid"></div>
+      <div class="gift-foot">
+        <div class="qty"><button onclick="qStep(-1)">−</button><span id="qd">1</span><button onclick="qStep(1)">+</button></div>
+        <button class="send-g" id="sendg" onclick="sendGift()"><i class="ti ti-gift"></i> Send · 💎 1</button>
+      </div>
+      <div style="font-size:11px;color:var(--t3);margin-top:10px;text-align:center">Balance: 💎 <span id="gift-bal">1,299</span> · Gifts convert to coins for the creator (70%).</div>
+    </div>
+  </div>
+
+  <!-- ───────── PAYWALL / UNLOCK GATE ───────── -->
+  <div class="ov" id="gate-ov" onclick="if(event.target===this)closeGate()">
+    <div class="gate-card">
+      <div class="gate-lock">🔒</div>
+      <h3 id="gate-title">Premium stream</h3>
+      <p class="gate-sub" id="gate-sub">Unlock to watch this stream</p>
+      <div class="gate-price" id="gate-price">💎 <span id="gate-price-val">50</span></div>
+      <button class="gate-confirm" id="gate-confirm" onclick="confirmUnlock()">Unlock · 💎 50</button>
+      <div><button class="gate-cancel" id="gate-cancel" onclick="closeGate()">Back to Discover</button></div>
+      <p class="gate-note">Access lasts for the stream's duration. Diamonds are non-refundable and go to the creator.</p>
+    </div>
+  </div>
+
+  <!-- ───────── LOGIN MODAL ───────── -->
+  <div class="ov" id="login-ov" onclick="if(event.target===this)closeLogin()">
+    <div class="login-card">
+      <button class="login-x" onclick="closeLogin()">✕</button>
+      <div class="login-logo">Grid</div>
+      <div class="login-tag">go live, get gifted</div>
+      <div class="login-inner">
+        <h3>Log in / Register</h3>
+        <button class="login-btn"><i class="ti ti-brand-facebook" style="color:#1877F2"></i> Continue with Facebook</button>
+        <button class="login-btn"><i class="ti ti-brand-google"></i> Continue with Google</button>
+        <button class="login-btn"><i class="ti ti-device-mobile" style="color:#8B5CF6"></i> Continue with phone</button>
+        <div class="login-alt">
+          <div><i class="ti ti-brand-x"></i></div>
+          <div><i class="ti ti-brand-line" style="color:#06C755"></i></div>
+          <div><i class="ti ti-mail" style="color:#3B82F6"></i></div>
+        </div>
+      </div>
+      <div class="login-legal">By continuing, I confirm I am at least 18 years old and agree to the Terms of Service and Privacy Policy.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Scripts (classic, load order matters) -->
+<script src="js/data.js"></script>
+<script src="js/screens.js"></script>
+<script src="js/golive.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
