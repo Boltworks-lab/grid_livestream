@@ -2,13 +2,17 @@ name: grid
 
 services:
   postgres:
-    image: postgres:16-alpine
+    # Debian variant, not alpine: the alpine image's extracted layers were corrupted
+    # by a wedged Docker Desktop on the dev machine (exec format error) and the
+    # poisoned snapshot survives pulls. Functionally identical for our use.
+    image: postgres:16
     environment:
       POSTGRES_USER: grid
       POSTGRES_PASSWORD: grid
       POSTGRES_DB: grid
     ports:
-      - '5432:5432'
+      # Host 5433: the dev machine runs a native Windows PostgreSQL on 5432.
+      - '5433:5432'
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
