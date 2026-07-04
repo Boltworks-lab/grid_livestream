@@ -1,0 +1,15 @@
+/* Minimal shell styles only — real styling comes from @grid/ui-tokens in Phase 1. */
+:root {
+  color-scheme: light;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #f4f4f6;
+  color: #17171c;
+}
+
+main {
+  padding: 3rem;
+}
