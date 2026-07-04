@@ -1,0 +1,594 @@
+// Grid — Prisma schema (Phase 1 ERD, refined from PROJECT_BRIEF §4).
+//
+// Ledger rules (PROJECT_BRIEF §3.1 — never weaken):
+//   * ledger_entries are IMMUTABLE — inserted inside a DB transaction, never
+//     updated or deleted. Balances are derived (SUM over entries), optionally
+//     cached with invariant checks. A DB trigger forbidding UPDATE/DELETE is
+//     added in the initial migration.
+//   * Every LedgerTransaction's entries must sum to zero per currency
+//     (debits == credits). Enforced by the wallet service + property tests.
+//   * idempotencyKey makes money mutations replay-safe.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Identity ────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  USER
+  CREATOR
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+  DELETED
+}
+
+model User {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  handle       String     @unique
+  email        String?    @unique
+  phone        String?    @unique
+  passwordHash String?
+  displayName  String?
+  avatarUrl    String?
+  bio          String?
+  dob          DateTime?  @db.Date
+  country      String?    @db.VarChar(2)
+  role         UserRole   @default(USER)
+  status       UserStatus @default(ACTIVE)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  deletedAt    DateTime?
+
+  creatorProfile CreatorProfile?
+  oauthAccounts  OAuthAccount[]
+  refreshTokens  RefreshToken[]
+  following      Follow[]            @relation("follower")
+  followers      Follow[]            @relation("creator")
+  streams        Stream[]
+  accessGrants   StreamAccessGrant[]
+  giftEvents     GiftEvent[]
+  subscriptions  Subscription[]      @relation("viewer")
+  subscribers    Subscription[]      @relation("subCreator")
+  reportsFiled   Report[]
+  chatMessages   ChatMessage[]
+
+  @@map("users")
+}
+
+enum KycStatus {
+  NONE
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+model CreatorProfile {
+  userId          String    @id @db.Uuid
+  user            User      @relation(fields: [userId], references: [id])
+  level           Int       @default(1)
+  followerCount   Int       @default(0) // denormalized; source of truth is follows
+  stripeConnectId String?   @unique
+  kycStatus       KycStatus @default(NONE)
+  payoutHoldUntil DateTime? // new-creator payout hold (brief §7)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  payouts Payout[]
+  vods    Vod[]
+
+  @@map("creator_profiles")
+}
+
+model Follow {
+  followerId String   @db.Uuid
+  creatorId  String   @db.Uuid
+  follower   User     @relation("follower", fields: [followerId], references: [id])
+  creator    User     @relation("creator", fields: [creatorId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@id([followerId, creatorId])
+  @@index([creatorId])
+  @@map("follows")
+}
+
+enum OAuthProvider {
+  GOOGLE
+  APPLE
+}
+
+model OAuthAccount {
+  id                String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String        @db.Uuid
+  user              User          @relation(fields: [userId], references: [id])
+  provider          OAuthProvider
+  providerAccountId String
+  createdAt         DateTime      @default(now())
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("oauth_accounts")
+}
+
+model RefreshToken {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @db.Uuid
+  user      User      @relation(fields: [userId], references: [id])
+  tokenHash String    @unique
+  familyId  String    @db.Uuid // rotation family: reuse of a revoked token kills the family
+  expiresAt DateTime
+  revokedAt DateTime?
+  ip        String?
+  userAgent String?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([familyId])
+  @@map("refresh_tokens")
+}
+
+model OtpCode {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  identifier String // email or phone
+  codeHash   String
+  purpose    String // signup | login | verify
+  attempts   Int       @default(0)
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([identifier, purpose])
+  @@map("otp_codes")
+}
+
+// ── Streaming ───────────────────────────────────────────────────────────────
+
+enum StreamVisibility {
+  PUBLIC
+  FOLLOWERS
+  PRIVATE
+}
+
+enum StreamAccess {
+  FREE
+  PPV
+  SUBS
+}
+
+enum StreamStatus {
+  SCHEDULED
+  LIVE
+  ENDED
+}
+
+model Stream {
+  id               String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  creatorId        String           @db.Uuid
+  creator          User             @relation(fields: [creatorId], references: [id])
+  title            String
+  category         String?
+  thumbnailUrl     String?
+  visibility       StreamVisibility @default(PUBLIC)
+  access           StreamAccess     @default(FREE)
+  ppvPriceDiamonds Int? // required when access = PPV (service-enforced)
+  status           StreamStatus     @default(SCHEDULED)
+  livekitRoom      String?          @unique
+  scheduledAt      DateTime?
+  startedAt        DateTime?
+  endedAt          DateTime?
+  peakViewers      Int              @default(0)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  accessGrants StreamAccessGrant[]
+  giftEvents   GiftEvent[]
+  chatMessages ChatMessage[]
+  vod          Vod?
+
+  @@index([status, startedAt])
+  @@index([creatorId])
+  @@map("streams")
+}
+
+enum GrantSource {
+  PPV
+  SUB
+  INVITE
+}
+
+model StreamAccessGrant {
+  id                  String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  streamId            String             @db.Uuid
+  stream              Stream             @relation(fields: [streamId], references: [id])
+  userId              String             @db.Uuid
+  user                User               @relation(fields: [userId], references: [id])
+  source              GrantSource
+  ledgerTransactionId String?            @unique @db.Uuid // set for PPV unlocks
+  ledgerTransaction   LedgerTransaction? @relation(fields: [ledgerTransactionId], references: [id])
+  createdAt           DateTime           @default(now())
+
+  @@unique([streamId, userId])
+  @@index([userId])
+  @@map("stream_access_grants")
+}
+
+// ── Gifting ─────────────────────────────────────────────────────────────────
+
+model GiftCatalogItem {
+  id            String   @id // human slug, e.g. "rose" — catalog is server-driven
+  name          String
+  emoji         String?
+  assetUrl      String?
+  priceDiamonds Int
+  animationTier Int      @default(0)
+  active        Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  giftEvents GiftEvent[]
+
+  @@map("gift_catalog")
+}
+
+model GiftEvent {
+  id                  String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  streamId            String            @db.Uuid
+  stream              Stream            @relation(fields: [streamId], references: [id])
+  senderId            String            @db.Uuid
+  sender              User              @relation(fields: [senderId], references: [id])
+  giftId              String
+  gift                GiftCatalogItem   @relation(fields: [giftId], references: [id])
+  qty                 Int
+  ledgerTransactionId String            @unique @db.Uuid
+  ledgerTransaction   LedgerTransaction @relation(fields: [ledgerTransactionId], references: [id])
+  createdAt           DateTime          @default(now())
+
+  @@index([streamId, createdAt])
+  @@index([senderId])
+  @@map("gift_events")
+}
+
+// ── Subscriptions & VOD ─────────────────────────────────────────────────────
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
+}
+
+enum PaymentProvider {
+  STRIPE
+  REVENUECAT
+}
+
+model Subscription {
+  id          String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  viewerId    String             @db.Uuid
+  viewer      User               @relation("viewer", fields: [viewerId], references: [id])
+  creatorId   String             @db.Uuid
+  creator     User               @relation("subCreator", fields: [creatorId], references: [id])
+  tier        Int                @default(1)
+  status      SubscriptionStatus
+  provider    PaymentProvider
+  providerRef String? // stripe subscription id / RC entitlement
+  renewsAt    DateTime?
+  canceledAt  DateTime?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@unique([viewerId, creatorId])
+  @@index([creatorId])
+  @@map("subscriptions")
+}
+
+enum VodStatus {
+  PROCESSING
+  READY
+  REMOVED
+}
+
+model Vod {
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  creatorId     String       @db.Uuid
+  creator       CreatorProfile @relation(fields: [creatorId], references: [userId])
+  streamId      String?      @unique @db.Uuid
+  stream        Stream?      @relation(fields: [streamId], references: [id])
+  title         String
+  access        StreamAccess @default(FREE)
+  priceDiamonds Int?
+  assetRef      String? // LiveKit egress / Mux asset id
+  status        VodStatus    @default(PROCESSING)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([creatorId])
+  @@map("vods")
+}
+
+// ── LEDGER (heart of the system, §3.1) ──────────────────────────────────────
+
+enum AccountOwnerType {
+  USER
+  CREATOR
+  PLATFORM
+}
+
+enum Currency {
+  DIAMOND
+  COIN
+}
+
+model Account {
+  id        String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ownerType AccountOwnerType
+  ownerId   String // user id / creator user id / "platform"
+  currency  Currency
+  createdAt DateTime         @default(now())
+
+  entries LedgerEntry[]
+
+  @@unique([ownerType, ownerId, currency])
+  @@map("accounts")
+}
+
+enum LedgerTxKind {
+  TOPUP
+  GIFT
+  PPV_UNLOCK
+  SUB
+  PAYOUT
+  REFUND
+  ADJUSTMENT
+}
+
+model LedgerTransaction {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  kind           LedgerTxKind
+  idempotencyKey String       @unique
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+
+  entries     LedgerEntry[]
+  giftEvent   GiftEvent?
+  accessGrant StreamAccessGrant?
+  payout      Payout?
+
+  @@index([kind, createdAt])
+  @@map("ledger_transactions")
+}
+
+enum EntryDirection {
+  DEBIT
+  CREDIT
+}
+
+model LedgerEntry {
+  id            String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  transactionId String            @db.Uuid
+  transaction   LedgerTransaction @relation(fields: [transactionId], references: [id])
+  accountId     String            @db.Uuid
+  account       Account           @relation(fields: [accountId], references: [id])
+  direction     EntryDirection
+  amount        BigInt // always positive; CHECK (amount > 0) in migration
+  createdAt     DateTime          @default(now())
+
+  @@index([accountId, createdAt])
+  @@index([transactionId])
+  @@map("ledger_entries")
+}
+
+enum PayoutStatus {
+  REQUESTED
+  APPROVED
+  PROCESSING
+  PAID
+  FAILED
+  CANCELED
+}
+
+model Payout {
+  id                  String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  creatorId           String             @db.Uuid
+  creator             CreatorProfile     @relation(fields: [creatorId], references: [userId])
+  coinAmount          BigInt
+  fiatAmountCents     Int
+  fiatCurrency        String             @default("usd") @db.VarChar(3)
+  provider            String             @default("stripe_connect")
+  providerRef         String? // Stripe transfer/payout id
+  status              PayoutStatus       @default(REQUESTED)
+  failureReason       String?
+  reviewedByStaffId   String?            @db.Uuid
+  processedAt         DateTime?
+  ledgerTransactionId String?            @unique @db.Uuid
+  ledgerTransaction   LedgerTransaction? @relation(fields: [ledgerTransactionId], references: [id])
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  @@index([status, createdAt])
+  @@index([creatorId])
+  @@map("payouts")
+}
+
+// ── Chat (ADR 0002: Redis hot path, async batch persist here) ───────────────
+
+model ChatMessage {
+  id           String    @id // ULID minted by the gateway (sortable)
+  streamId     String    @db.Uuid
+  stream       Stream    @relation(fields: [streamId], references: [id])
+  senderId     String    @db.Uuid
+  sender       User      @relation(fields: [senderId], references: [id])
+  body         String
+  sentAt       DateTime
+  hiddenAt     DateTime? // set by moderation (auto or staff)
+  hiddenReason String?
+
+  @@index([streamId, sentAt])
+  @@map("chat_messages")
+}
+
+// ── Safety & ops ────────────────────────────────────────────────────────────
+
+enum TargetType {
+  STREAM
+  USER
+  CHAT_MESSAGE
+  VOD
+}
+
+enum ReportStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+model Report {
+  id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  reporterId      String       @db.Uuid
+  reporter        User         @relation(fields: [reporterId], references: [id])
+  targetType      TargetType
+  targetId        String
+  reason          String
+  details         String?
+  status          ReportStatus @default(OPEN)
+  assigneeStaffId String?      @db.Uuid
+  resolvedAt      DateTime?
+  createdAt       DateTime     @default(now())
+
+  moderationActions ModerationAction[]
+
+  @@index([status, createdAt])
+  @@map("reports")
+}
+
+enum ModAction {
+  WARN
+  MUTE
+  REMOVE_CONTENT
+  SUSPEND
+  BAN
+  SHADOWBAN
+}
+
+model ModerationAction {
+  id           String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  actorStaffId String?    @db.Uuid // null when automated (§8)
+  actorStaff   StaffUser? @relation(fields: [actorStaffId], references: [id])
+  automated    Boolean    @default(false)
+  targetType   TargetType
+  targetId     String
+  action       ModAction
+  reason       String
+  expiresAt    DateTime? // mutes / suspensions
+  reportId     String?    @db.Uuid
+  report       Report?    @relation(fields: [reportId], references: [id])
+  createdAt    DateTime   @default(now())
+
+  @@index([targetType, targetId])
+  @@map("moderation_actions")
+}
+
+enum StaffRole {
+  SUPERADMIN
+  ADMIN
+  MODERATOR
+  SUPPORT
+  MARKETING
+  ANALYST
+}
+
+enum StaffStatus {
+  ACTIVE
+  DISABLED
+}
+
+model StaffUser {
+  id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email        String      @unique
+  name         String?
+  role         StaffRole
+  passwordHash String
+  totpSecret   String? // required ACTIVE staff complete TOTP enrollment on first login
+  status       StaffStatus @default(ACTIVE)
+  lastLoginAt  DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  auditLogs         AuditLog[]
+  moderationActions ModerationAction[]
+  tickets           Ticket[]
+
+  @@map("staff_users")
+}
+
+// Append-only: INSERT-only trigger added in the initial migration (§3.5).
+model AuditLog {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  staffId    String    @db.Uuid
+  staff      StaffUser @relation(fields: [staffId], references: [id])
+  action     String
+  targetType String?
+  targetId   String?
+  before     Json?
+  after      Json?
+  ip         String?
+  createdAt  DateTime  @default(now())
+
+  @@index([staffId, createdAt])
+  @@index([targetType, targetId])
+  @@map("audit_log")
+}
+
+enum TicketStatus {
+  OPEN
+  PENDING
+  SOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+// Minimal local record; external helpdesk linkage per ADR 0003 (externalRef).
+model Ticket {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String?        @db.Uuid
+  channel         String // in_app | email | external
+  subject         String
+  status          TicketStatus   @default(OPEN)
+  priority        TicketPriority @default(NORMAL)
+  assigneeStaffId String?        @db.Uuid
+  assigneeStaff   StaffUser?     @relation(fields: [assigneeStaffId], references: [id])
+  externalRef     String? // helpdesk ticket id (ADR 0003)
+  slaDueAt        DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([status, priority])
+  @@map("tickets")
+}
+
+// Feature flags, banners, remote config (admin-managed, mobile reads at launch)
+model AppConfig {
+  key              String   @id
+  value            Json
+  updatedByStaffId String?  @db.Uuid
+  updatedAt        DateTime @updatedAt
+
+  @@map("app_config")
+}
