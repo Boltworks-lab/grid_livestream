@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+export * from './ws-events';
+
 /**
  * Platform fee fractions (PROJECT_BRIEF §1). Server-authoritative: the API computes
  * every split from these; clients may only display them (PROJECT_BRIEF §3.2).
