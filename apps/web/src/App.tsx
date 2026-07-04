@@ -1,8 +1,9 @@
+import { useAuth } from './auth/AuthContext';
+import { AuthScreen } from './screens/AuthScreen';
+import { HomeScreen } from './screens/HomeScreen';
+
 export function App() {
-  return (
-    <main>
-      <h1>Grid</h1>
-      <p>Web app shell — Phase 0. Product screens arrive from Phase 2 onward.</p>
-    </main>
-  );
+  const { user, restoring } = useAuth();
+  if (restoring) return <main className="auth-wrap" aria-busy="true" />;
+  return user ? <HomeScreen /> : <AuthScreen />;
 }

@@ -11,7 +11,9 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@grid/api-client": "workspace:*",
     "@grid/shared": "workspace:*",
+    "@grid/ui-tokens": "workspace:*",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },

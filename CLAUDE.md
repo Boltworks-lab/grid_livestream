@@ -11,8 +11,12 @@ Read PROJECT_BRIEF.md first; it is the authoritative spec. This file is the quic
   design tokens extracted (`packages/ui-tokens`).
 - **Phase 2 in progress.** Done: init migration applied (ledger append-only triggers
   verified live), auth (register/login/refresh rotation + reuse detection), users
-  (me/profile/follow), global JWT guard + throttler, e2e-verified against Postgres.
-  Remaining: email OTP, Google/Apple OAuth, Sentry, auth/profile screens (web + mobile).
+  (me/profile/follow), global JWT guard + throttler, CORS, e2e-verified against
+  Postgres; @grid/api-client now real (openapi-typescript + openapi-fetch, generated
+  from docs/api/openapi.yaml — regenerate via `pnpm --filter @grid/api-client generate`
+  after contract changes); packages build dual CJS+ESM via tsup; web auth + profile
+  screens live against the API (ui-tokens via CSS vars).
+  Remaining: mobile auth screens, email OTP, Google/Apple OAuth, Sentry.
 - Remote: `github.com/Boltworks-lab/grid_livestream` (repo-scoped credential —
   `credential.useHttpPath true`). Local Postgres runs on **host port 5433** (native
   Windows Postgres owns 5432); Redis on 6379. Mobile is pinned to **Expo SDK 54**

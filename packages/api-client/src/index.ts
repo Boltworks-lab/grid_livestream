@@ -1,6 +1,30 @@
+import createClient from 'openapi-fetch';
+
+import type { paths } from './schema';
+
+export type { components, paths } from './schema';
+
+export interface GridClientOptions {
+  baseUrl: string;
+  /** Called per request; return the current access token or null. */
+  getAccessToken?: () => string | null;
+}
+
 /**
- * Placeholder package. The real typed client is generated from the API's OpenAPI
- * spec in Phase 1 and consumed by web, admin, and mobile (PROJECT_BRIEF §2, §5).
- * Hand-written client code does not belong here.
+ * Typed client generated from docs/api/openapi.yaml (`pnpm --filter
+ * @grid/api-client generate`). All three apps consume this — hand-written
+ * fetch calls against the API are a code smell (PROJECT_BRIEF §5).
  */
-export const API_CLIENT_STATUS = 'placeholder' as const;
+export function createGridClient({ baseUrl, getAccessToken }: GridClientOptions) {
+  const client = createClient<paths>({ baseUrl });
+  client.use({
+    onRequest({ request }) {
+      const token = getAccessToken?.();
+      if (token) request.headers.set('authorization', `Bearer ${token}`);
+      return request;
+    },
+  });
+  return client;
+}
+
+export type GridClient = ReturnType<typeof createGridClient>;

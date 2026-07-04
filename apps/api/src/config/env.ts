@@ -15,6 +15,8 @@ const envSchema = z
       .default('postgresql://grid:grid@localhost:5433/grid'),
     REDIS_URL: z.string().url().default('redis://localhost:6379'),
     JWT_SECRET: z.string().min(32).default('dev-only-secret-change-me-0123456789abcdef'),
+    /** comma-separated browser origins allowed by CORS */
+    CORS_ORIGINS: z.string().default('http://localhost:5173,http://localhost:5174'),
     /** access token TTL in seconds */
     JWT_ACCESS_TTL: z.coerce.number().int().positive().default(900),
     /** refresh token TTL in days */

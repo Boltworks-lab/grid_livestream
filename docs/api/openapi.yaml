@@ -90,6 +90,22 @@ paths:
       responses:
         '200': { $ref: '#/components/responses/AuthTokens' }
         '401': { $ref: '#/components/responses/Error' }
+  /auth/logout:
+    post:
+      security: []
+      tags: [auth]
+      summary: Revoke a refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '204': { description: Revoked (idempotent) }
   /auth/oauth/{provider}:
     post:
       security: []
@@ -427,15 +443,16 @@ components:
         password: { type: string }
     User:
       type: object
-      required: [id, handle, role, status]
+      required: [id, handle, email, displayName, avatarUrl, bio, role, status, createdAt]
       properties:
         id: { type: string, format: uuid }
         handle: { type: string }
-        displayName: { type: string, nullable: true }
-        avatarUrl: { type: string, nullable: true }
-        bio: { type: string, nullable: true }
-        role: { type: string, enum: [user, creator] }
-        status: { type: string, enum: [active, suspended, banned, deleted] }
+        email: { type: [string, 'null'] }
+        displayName: { type: [string, 'null'] }
+        avatarUrl: { type: [string, 'null'] }
+        bio: { type: [string, 'null'] }
+        role: { type: string, enum: [USER, CREATOR] }
+        status: { type: string, enum: [ACTIVE, SUSPENDED, BANNED, DELETED] }
         createdAt: { type: string, format: date-time }
     UserUpdate:
       type: object
