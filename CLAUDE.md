@@ -9,12 +9,14 @@ Read PROJECT_BRIEF.md first; it is the authoritative spec. This file is the quic
   (`apps/api/prisma/`), OpenAPI skeleton (`docs/api/openapi.yaml`), WS event contract
   (`packages/shared/src/ws-events.ts` + `docs/ws-contract.md`), ADRs 0002–0004,
   design tokens extracted (`packages/ui-tokens`).
-- **Pending:** apply init migration to a live DB (Docker was wedged, owner rebooting);
-  push to GitHub (`Boltworks-lab/grid_livestream` — needs collaborator access for the
-  machine's `skipper-logistics` credential). Mobile is pinned to **Expo SDK 54** (Play
-  Store Expo Go cap — see apps/mobile/AGENTS.md).
-- Next: **Phase 2 — foundations** (auth email/OTP + Google/Apple, JWT + refresh rotation,
-  users/profiles/follows, RBAC guards, rate limiting, Sentry; auth screens web + mobile).
+- **Phase 2 in progress.** Done: init migration applied (ledger append-only triggers
+  verified live), auth (register/login/refresh rotation + reuse detection), users
+  (me/profile/follow), global JWT guard + throttler, e2e-verified against Postgres.
+  Remaining: email OTP, Google/Apple OAuth, Sentry, auth/profile screens (web + mobile).
+- Remote: `github.com/Boltworks-lab/grid_livestream` (repo-scoped credential —
+  `credential.useHttpPath true`). Local Postgres runs on **host port 5433** (native
+  Windows Postgres owns 5432); Redis on 6379. Mobile is pinned to **Expo SDK 54**
+  (Play Store Expo Go cap — see apps/mobile/AGENTS.md).
 - Work strictly in phases (brief §9). Confirm the plan with the owner before each phase.
 
 ## Stack (ADR 0001)
