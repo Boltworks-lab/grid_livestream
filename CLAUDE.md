@@ -19,7 +19,8 @@ Read PROJECT_BRIEF.md first; it is the authoritative spec. This file is the quic
 
 ## Stack (ADR 0001)
 
-TypeScript everywhere. React 18 + Vite (web, admin) · Expo/React Native (mobile) · NestJS
+TypeScript everywhere. React 19.1 + Vite (web, admin; pinned via pnpm.overrides) ·
+Expo/React Native SDK 54 (mobile) · NestJS
 modular monolith (api) · PostgreSQL + Prisma + Redis · Socket.IO · LiveKit Cloud · Stripe +
 RevenueCat · Stripe Connect payouts · pnpm 10 + Turborepo.
 

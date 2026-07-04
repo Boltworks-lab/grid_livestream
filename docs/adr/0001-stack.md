@@ -47,6 +47,16 @@ One language — TypeScript — across every layer, in a pnpm + Turborepo monore
 - pnpm 10 (not 11): the machine runs Node 22.12 and pnpm 11 requires ≥22.13. Pinned via
   `packageManager`. Corepack was bypassed (known signature-verification bug in the version
   bundled with Node 22.12); pnpm installed globally via npm instead.
+- **React 19.1 everywhere, not React 18** (amended 2026-07-03): Expo SDK 54 requires
+  React 19.1 exactly, and a hoisted monorepo cannot safely carry two React majors (the
+  CI typecheck broke on the 18/19 `@types/react` clash). The §2 decision was React+Vite
+  vs Angular — that stands; only the major version moved. Root `pnpm.overrides` pins
+  react / react-dom / @types/react(-dom), and the Vite configs `dedupe` react so tests
+  can never load duplicate instances.
+- Mobile is pinned to **Expo SDK 54**: the Play Store build of Expo Go supports only
+  SDK 54 (May 2026 policy; newer SDKs sideload from expo.dev/go) and the owner previews
+  on a physical phone. `.npmrc` uses `node-linker=hoisted` because Metro on SDK ≤ 54
+  cannot resolve pnpm's isolated layout.
 - Vitest is the single test runner, including for NestJS (via `unplugin-swc`, since esbuild
   does not support `emitDecoratorMetadata`). Revisit only if Nest tooling friction appears.
 - Shared packages compile to CJS + `.d.ts` via plain `tsc`; consumers depend on built output
