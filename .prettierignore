@@ -1,0 +1,9 @@
+# Prototypes are reference-only and stay byte-identical (PROJECT_BRIEF §13)
+prototypes/
+
+pnpm-lock.yaml
+dist/
+build/
+coverage/
+.turbo/
+.expo/
