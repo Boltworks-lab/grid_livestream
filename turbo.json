@@ -14,6 +14,19 @@
     "dev": {
       "cache": false,
       "persistent": true
+    },
+    "db:generate": {
+      "cache": false
+    },
+    "@grid/api#typecheck": {
+      "dependsOn": ["^build", "db:generate"]
+    },
+    "@grid/api#test": {
+      "dependsOn": ["^build", "db:generate"]
+    },
+    "@grid/api#build": {
+      "dependsOn": ["^build", "db:generate"],
+      "outputs": ["dist/**"]
     }
   }
 }
