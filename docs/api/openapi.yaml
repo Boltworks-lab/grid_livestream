@@ -1,0 +1,508 @@
+# Grid API — OpenAPI skeleton (Phase 1 design contract).
+#
+# Authoritative-spec policy (PROJECT_BRIEF §5): from Phase 2 the spec is emitted
+# from NestJS (@nestjs/swagger) and CI fails if the emitted spec drifts from the
+# reviewed contract. packages/api-client is generated from this document — the
+# mobile/web/admin apps never hand-write API calls.
+#
+# Money endpoints follow §3: server-authoritative amounts, idempotency keys on
+# mutations, webhooks as the only crediting path.
+
+openapi: 3.1.0
+info:
+  title: Grid API
+  version: 0.1.0
+  description: Live-streaming creator-economy platform. Phase 1 skeleton — auth/users/streams/wallet/gifts/gates cover Phases 2–6; remaining modules are stubs.
+servers:
+  - url: http://localhost:3001
+    description: local dev
+tags:
+  - name: auth
+  - name: users
+  - name: streams
+  - name: wallet
+  - name: gifts
+  - name: payments
+  - name: gates
+  - name: subscriptions
+  - name: payouts
+  - name: moderation
+  - name: notifications
+  - name: admin
+
+security:
+  - bearerAuth: []
+
+paths:
+  /health:
+    get:
+      security: []
+      tags: [admin]
+      summary: Liveness probe
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Health' }
+
+  # ── auth (Phase 2) ─────────────────────────────────────────────────────────
+  /auth/register:
+    post:
+      security: []
+      tags: [auth]
+      summary: Register with email + password (18+ age gate enforced)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '201': { $ref: '#/components/responses/AuthTokens' }
+        '400': { $ref: '#/components/responses/Error' }
+  /auth/login:
+    post:
+      security: []
+      tags: [auth]
+      summary: Login with email/handle + password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/AuthTokens' }
+        '401': { $ref: '#/components/responses/Error' }
+  /auth/refresh:
+    post:
+      security: []
+      tags: [auth]
+      summary: Rotate refresh token (reuse detection revokes the family)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '200': { $ref: '#/components/responses/AuthTokens' }
+        '401': { $ref: '#/components/responses/Error' }
+  /auth/oauth/{provider}:
+    post:
+      security: []
+      tags: [auth]
+      summary: Exchange a Google/Apple identity token for Grid tokens
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema: { type: string, enum: [google, apple] }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [idToken]
+              properties:
+                idToken: { type: string }
+      responses:
+        '200': { $ref: '#/components/responses/AuthTokens' }
+
+  # ── users (Phase 2) ────────────────────────────────────────────────────────
+  /users/me:
+    get:
+      tags: [users]
+      summary: Current user profile
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+    patch:
+      tags: [users]
+      summary: Update profile
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserUpdate' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+  /users/{handle}:
+    get:
+      security: []
+      tags: [users]
+      summary: Public profile by handle
+      parameters:
+        - { name: handle, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublicProfile' }
+        '404': { $ref: '#/components/responses/Error' }
+  /users/{id}/follow:
+    post:
+      tags: [users]
+      summary: Follow a creator
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '204': { description: Followed }
+    delete:
+      tags: [users]
+      summary: Unfollow
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '204': { description: Unfollowed }
+
+  # ── streams (Phase 4/6) ────────────────────────────────────────────────────
+  /streams:
+    get:
+      security: []
+      tags: [streams]
+      summary: Discover feed (live now, filterable by category)
+      parameters:
+        - { name: category, in: query, schema: { type: string } }
+        - { name: cursor, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Stream' }
+                  nextCursor: { type: string, nullable: true }
+    post:
+      tags: [streams]
+      summary: Create a stream (Go Live setup — visibility, access, PPV price)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/StreamCreate' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Stream' }
+  /streams/{id}:
+    get:
+      security: []
+      tags: [streams]
+      summary: Stream details (gate metadata included; media token NOT included)
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Stream' }
+  /streams/{id}/token:
+    post:
+      tags: [streams]
+      summary: Mint a LiveKit join token — ONLY after entitlement check (ADR 0004, §3.4)
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '200':
+          description: Short-lived LiveKit access token
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [token, url]
+                properties:
+                  token: { type: string }
+                  url: { type: string, description: LiveKit server URL }
+        '402': { description: 'Gated: purchase or subscription required' }
+        '403': { $ref: '#/components/responses/Error' }
+  /streams/{id}/end:
+    post:
+      tags: [streams]
+      summary: End own stream
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '204': { description: Ended }
+
+  # ── wallet (Phase 3) ───────────────────────────────────────────────────────
+  /wallet:
+    get:
+      tags: [wallet]
+      summary: Balances (derived from the ledger, never client-side)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WalletBalances' }
+  /wallet/transactions:
+    get:
+      tags: [wallet]
+      summary: Transaction history
+      parameters: [{ name: cursor, in: query, schema: { type: string } }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/WalletTransaction' }
+                  nextCursor: { type: string, nullable: true }
+  /wallet/topup/checkout:
+    post:
+      tags: [wallet]
+      summary: Create a Stripe Checkout session for a diamond package (web channel)
+      description: Diamonds are credited by the Stripe webhook only (§3.3) — never by this endpoint's response.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [packageId]
+              properties:
+                packageId: { type: string }
+      responses:
+        '200':
+          description: Checkout session
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  checkoutUrl: { type: string }
+
+  # ── gifts (Phase 5) ────────────────────────────────────────────────────────
+  /gifts/catalog:
+    get:
+      security: []
+      tags: [gifts]
+      summary: Server-driven gift catalog
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/GiftCatalogItem' }
+  /streams/{id}/gifts:
+    post:
+      tags: [gifts]
+      summary: Send a gift (ledger tx — viewer diamonds → creator coins + platform fee)
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [giftId, qty, idempotencyKey]
+              properties:
+                giftId: { type: string }
+                qty: { type: integer, minimum: 1, maximum: 99 }
+                idempotencyKey: { type: string, format: uuid }
+      responses:
+        '201': { description: 'Gift sent; broadcast via WS gift:sent' }
+        '402': { description: Insufficient diamonds }
+
+  # ── gates (Phase 6) ────────────────────────────────────────────────────────
+  /gates/{streamId}/unlock:
+    post:
+      tags: [gates]
+      summary: PPV unlock (ledger tx + stream_access_grant; token minted separately)
+      parameters:
+        [{ name: streamId, in: path, required: true, schema: { type: string, format: uuid } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [idempotencyKey]
+              properties:
+                idempotencyKey: { type: string, format: uuid }
+      responses:
+        '201': { description: Unlocked — grant persisted }
+        '402': { description: Insufficient diamonds }
+
+  # ── payments webhooks (Phase 3; §3.3 source of truth) ─────────────────────
+  /payments/webhooks/stripe:
+    post:
+      security: []
+      tags: [payments]
+      summary: Stripe webhook (signature-verified, idempotent crediting)
+      responses:
+        '200': { description: Processed or already processed }
+  /payments/webhooks/revenuecat:
+    post:
+      security: []
+      tags: [payments]
+      summary: RevenueCat webhook (signature-verified, idempotent crediting)
+      responses:
+        '200': { description: Processed or already processed }
+
+  # ── stubs: designed in later phases ────────────────────────────────────────
+  /subscriptions:
+    {
+      post:
+        { tags: [subscriptions], summary: 'Phase 6', responses: { '501': { description: stub } } },
+    }
+  /payouts:
+    { post: { tags: [payouts], summary: 'Phase 7', responses: { '501': { description: stub } } } }
+  /reports:
+    {
+      post: { tags: [moderation], summary: 'Phase 8', responses: { '501': { description: stub } } },
+    }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    AuthTokens:
+      description: Access + refresh token pair
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [accessToken, refreshToken, user]
+            properties:
+              accessToken: { type: string }
+              refreshToken: { type: string }
+              user: { $ref: '#/components/schemas/User' }
+    Error:
+      description: Error envelope
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Health:
+      type: object
+      required: [status, service, timestamp]
+      properties:
+        status: { type: string, enum: [ok] }
+        service: { type: string }
+        timestamp: { type: string, format: date-time }
+    Error:
+      type: object
+      required: [statusCode, message]
+      properties:
+        statusCode: { type: integer }
+        message: { type: string }
+        code: { type: string, description: machine-readable error code }
+    RegisterRequest:
+      type: object
+      required: [email, password, handle, dob]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        handle: { type: string, pattern: '^[a-z0-9_]{3,24}$' }
+        dob: { type: string, format: date, description: 18+ enforced server-side }
+        country: { type: string, minLength: 2, maxLength: 2 }
+    LoginRequest:
+      type: object
+      required: [identifier, password]
+      properties:
+        identifier: { type: string, description: email or handle }
+        password: { type: string }
+    User:
+      type: object
+      required: [id, handle, role, status]
+      properties:
+        id: { type: string, format: uuid }
+        handle: { type: string }
+        displayName: { type: string, nullable: true }
+        avatarUrl: { type: string, nullable: true }
+        bio: { type: string, nullable: true }
+        role: { type: string, enum: [user, creator] }
+        status: { type: string, enum: [active, suspended, banned, deleted] }
+        createdAt: { type: string, format: date-time }
+    UserUpdate:
+      type: object
+      properties:
+        displayName: { type: string }
+        avatarUrl: { type: string }
+        bio: { type: string, maxLength: 300 }
+    PublicProfile:
+      type: object
+      required: [id, handle]
+      properties:
+        id: { type: string, format: uuid }
+        handle: { type: string }
+        displayName: { type: string, nullable: true }
+        avatarUrl: { type: string, nullable: true }
+        bio: { type: string, nullable: true }
+        followerCount: { type: integer }
+        isLive: { type: boolean }
+    StreamCreate:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string, maxLength: 120 }
+        category: { type: string }
+        visibility: { type: string, enum: [public, followers, private], default: public }
+        access: { type: string, enum: [free, ppv, subs], default: free }
+        ppvPriceDiamonds: { type: integer, minimum: 1, description: required when access=ppv }
+    Stream:
+      type: object
+      required: [id, creatorId, title, visibility, access, status]
+      properties:
+        id: { type: string, format: uuid }
+        creatorId: { type: string, format: uuid }
+        creatorHandle: { type: string }
+        title: { type: string }
+        category: { type: string, nullable: true }
+        thumbnailUrl: { type: string, nullable: true }
+        visibility: { type: string, enum: [public, followers, private] }
+        access: { type: string, enum: [free, ppv, subs] }
+        ppvPriceDiamonds: { type: integer, nullable: true }
+        status: { type: string, enum: [scheduled, live, ended] }
+        viewerCount: { type: integer }
+        startedAt: { type: string, format: date-time, nullable: true }
+        entitled: { type: boolean, description: whether the caller may join (server-computed) }
+    WalletBalances:
+      type: object
+      required: [diamonds, coins]
+      properties:
+        diamonds: { type: integer, description: spendable balance (viewer currency) }
+        coins: { type: integer, description: earned balance (creator currency) }
+    WalletTransaction:
+      type: object
+      required: [id, kind, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        kind: { type: string, enum: [topup, gift, ppv_unlock, sub, payout, refund, adjustment] }
+        amount: { type: integer, description: signed from the caller's perspective }
+        currency: { type: string, enum: [diamond, coin] }
+        metadata: { type: object, additionalProperties: true }
+        createdAt: { type: string, format: date-time }
+    GiftCatalogItem:
+      type: object
+      required: [id, name, priceDiamonds, animationTier]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        emoji: { type: string, nullable: true }
+        assetUrl: { type: string, nullable: true }
+        priceDiamonds: { type: integer }
+        animationTier: { type: integer }
