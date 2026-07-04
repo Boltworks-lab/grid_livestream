@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+export * from './auth';
 export * from './ws-events';
 
 /**
