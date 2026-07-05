@@ -30,7 +30,9 @@ function resolveBaseUrl(): string {
   return `http://${host ?? 'localhost'}:3001`;
 }
 
+export const API_BASE = resolveBaseUrl();
+
 export const api = createGridClient({
-  baseUrl: resolveBaseUrl(),
+  baseUrl: API_BASE,
   getAccessToken: tokenStore.getAccess,
 });

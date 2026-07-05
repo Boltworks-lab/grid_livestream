@@ -32,7 +32,15 @@ Read PROJECT_BRIEF.md first; it is the authoritative spec. This file is the quic
   LiveKit video = owner-blocked on keys. Web live UI shipped: router (/, /stream/:id,
   /go-live, /me), Discover grid with lock badges, Go Live form, live room with working
   chat + creator moderation + gate screen; video slot mounts LiveKit once keys exist.
-  Mobile live UI pending (deferred.md).
+- **Phase 5 done** (verified 11/11): server-driven gift catalog (seeded from the
+  prototype), send-gift = 5-entry cross-currency ledger tx (70/30, rounding favors
+  the creator, computeGiftSplit in shared), combo counters + session top-gifters in
+  Redis, gift:sent broadcasts, web gift bar + floating animations. Books reconcile
+  to zero in both currencies.
+- **Phase 4 mobile UI shipped**: React Navigation bottom tabs (Discover / Go Live /
+  Wallet / Me) + full-bleed live room (overlay chat, action rail, swipe/chevron
+  next-stream, bottom-sheet gift drawer, gate screen). Wallet is view-only on mobile
+  until RevenueCat IAP.
 - **docs/deferred.md is the skip ledger** — every intentionally skipped item lives
   there. Add to it when skipping; review it at each phase boundary.
 - Remote: `github.com/Boltworks-lab/grid_livestream` (repo-scoped credential —
