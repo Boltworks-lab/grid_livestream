@@ -64,6 +64,8 @@ export function LiveRoomScreen() {
   const [catalog, setCatalog] = useState<GiftCatalogItem[]>([]);
   const [giftError, setGiftError] = useState<string | null>(null);
   const [input, setInput] = useState('');
+  const [unlockMsg, setUnlockMsg] = useState<string | null>(null);
+  const [unlockBusy, setUnlockBusy] = useState(false);
   const socketRef = useRef<Socket | null>(null);
 
   const isCreator = stream !== null && user !== null && stream.creatorId === user.id;
@@ -88,14 +90,17 @@ export function LiveRoomScreen() {
     }),
   ).current;
 
+  const loadStream = useCallback(async () => {
+    const { data } = await api.GET('/streams/{id}', { params: { path: { id: streamId } } });
+    if (data) setStream(data as StreamSummary);
+  }, [streamId]);
+
   useEffect(() => {
-    void api
-      .GET('/streams/{id}', { params: { path: { id: streamId } } })
-      .then(({ data }) => data && setStream(data as StreamSummary));
+    void loadStream();
     void api
       .GET('/gifts/catalog')
       .then(({ data }) => data && setCatalog(data as GiftCatalogItem[]));
-  }, [streamId]);
+  }, [streamId, loadStream]);
 
   useEffect(() => {
     if (!stream?.entitled || stream.status !== 'LIVE') return;
@@ -184,14 +189,39 @@ export function LiveRoomScreen() {
         <Text style={styles.gateTitle}>{stream.title}</Text>
         <Text style={styles.muted}>@{stream.creatorHandle}</Text>
         {stream.access === 'PPV' && (
-          <Text style={styles.gatePrice}>Unlock for 💎 {stream.ppvPriceDiamonds}</Text>
+          <>
+            <Text style={styles.gatePrice}>Unlock for 💎 {stream.ppvPriceDiamonds}</Text>
+            <Pressable
+              style={[styles.backBtn, unlockBusy && { opacity: 0.6 }]}
+              onPress={() =>
+                void (async () => {
+                  setUnlockBusy(true);
+                  setUnlockMsg(null);
+                  const { data, response } = await api.POST('/gates/{streamId}/unlock', {
+                    params: { path: { streamId } },
+                  });
+                  if (data?.unlocked) await loadStream();
+                  else
+                    setUnlockMsg(
+                      response.status === 422
+                        ? 'Not enough diamonds — recharge in Wallet (web)'
+                        : 'Unlock failed — try again',
+                    );
+                  setUnlockBusy(false);
+                })()
+              }
+            >
+              <Text style={styles.backText}>
+                {unlockBusy ? '…' : `Unlock — 💎 ${stream.ppvPriceDiamonds}`}
+              </Text>
+            </Pressable>
+            {unlockMsg && <Text style={[styles.muted, styles.smallCenter]}>{unlockMsg}</Text>}
+          </>
         )}
-        <Text style={[styles.muted, styles.smallCenter]}>
-          {stream.access === 'PPV'
-            ? 'PPV unlocking ships in Phase 6.'
-            : 'Access is enforced server-side.'}
-        </Text>
-        <Pressable style={styles.backBtn} onPress={() => navigation.goBack()}>
+        {stream.access !== 'PPV' && (
+          <Text style={[styles.muted, styles.smallCenter]}>Access is enforced server-side.</Text>
+        )}
+        <Pressable style={[styles.backBtn, styles.ghostBtn]} onPress={() => navigation.goBack()}>
           <Text style={styles.backText}>Back to Discover</Text>
         </Pressable>
       </View>
@@ -423,5 +453,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     paddingVertical: 10,
   },
+  ghostBtn: { backgroundColor: color.bg2 },
   backText: { color: color.white, fontWeight: '600' },
 });

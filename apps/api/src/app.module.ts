@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { ChatModule } from './chat/chat.module';
 import { env } from './config/env';
+import { GatesModule } from './gates/gates.module';
 import { GiftsModule } from './gifts/gifts.module';
 import { HealthController } from './health/health.controller';
 import { PaymentsModule } from './payments/payments.module';
@@ -39,6 +40,7 @@ import { WalletModule } from './wallet/wallet.module';
     StreamsModule,
     ChatModule,
     GiftsModule,
+    GatesModule,
   ],
   controllers: [HealthController],
   providers: [

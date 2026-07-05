@@ -39,23 +39,29 @@ export function LiveRoomScreen() {
     'checking',
   );
   const [floats, setFloats] = useState<FloatingGift[]>([]);
+  const [unlockState, setUnlockState] = useState<'idle' | 'busy' | 'insufficient' | 'failed'>(
+    'idle',
+  );
   const socketRef = useRef<Socket | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
 
   const isCreator = stream !== null && user !== null && stream.creatorId === user.id;
 
-  useEffect(() => {
+  const loadStream = useCallback(async () => {
     if (!id) return;
-    void api.GET('/streams/{id}', { params: { path: { id } } }).then(({ data, response }) => {
-      if (response.status === 404) setNotFound(true);
-      else if (data) {
-        const s = data as StreamSummary;
-        setStream(s);
-        setViewerCount(s.viewerCount);
-        if (s.status === 'ENDED') setEnded(true);
-      }
-    });
+    const { data, response } = await api.GET('/streams/{id}', { params: { path: { id } } });
+    if (response.status === 404) setNotFound(true);
+    else if (data) {
+      const s = data as StreamSummary;
+      setStream(s);
+      setViewerCount(s.viewerCount);
+      if (s.status === 'ENDED') setEnded(true);
+    }
   }, [id]);
+
+  useEffect(() => {
+    void loadStream();
+  }, [loadStream]);
 
   // media token: proves the §3.4 gate; LiveKit playback mounts here once keys exist
   useEffect(() => {
@@ -177,6 +183,19 @@ export function LiveRoomScreen() {
   if (!stream) return <main className="page" aria-busy="true" />;
 
   if (!stream.entitled) {
+    const unlock = async () => {
+      setUnlockState('busy');
+      const { data, response } = await api.POST('/gates/{streamId}/unlock', {
+        params: { path: { streamId: stream.id } },
+      });
+      if (data?.unlocked) {
+        window.dispatchEvent(new CustomEvent('grid:wallet-changed'));
+        await loadStream(); // entitled now → the room mounts
+        setUnlockState('idle');
+      } else {
+        setUnlockState(response.status === 422 ? 'insufficient' : 'failed');
+      }
+    };
     return (
       <main className="page narrow">
         <section className="panel gate">
@@ -184,15 +203,29 @@ export function LiveRoomScreen() {
           <h2>{stream.title}</h2>
           <p className="muted">by @{stream.creatorHandle}</p>
           {stream.access === 'PPV' && (
-            <p className="gate-price">Unlock for 💎 {stream.ppvPriceDiamonds}</p>
+            <>
+              <p className="gate-price">Unlock for 💎 {stream.ppvPriceDiamonds}</p>
+              <button
+                type="button"
+                className="primary"
+                disabled={unlockState === 'busy'}
+                onClick={() => void unlock()}
+              >
+                {unlockState === 'busy' ? '…' : `Unlock — 💎 ${stream.ppvPriceDiamonds}`}
+              </button>
+              {unlockState === 'insufficient' && (
+                <p className="error small">
+                  Not enough diamonds — <Link to="/me">recharge your wallet</Link>
+                </p>
+              )}
+              {unlockState === 'failed' && <p className="error small">Unlock failed — try again</p>}
+              <p className="muted small">One-time unlock; access persists for this stream.</p>
+            </>
           )}
-          {stream.access === 'SUBS' && <p className="gate-price">Subscribers only</p>}
+          {stream.access === 'SUBS' && (
+            <p className="gate-price">Subscribers only — subscriptions launch soon</p>
+          )}
           {stream.visibility === 'FOLLOWERS' && <p className="gate-price">Followers only</p>}
-          <p className="muted small">
-            {stream.access === 'PPV'
-              ? 'Pay-per-view unlocking ships in Phase 6 — the gate itself is already enforced server-side.'
-              : 'Access is enforced at the media layer — this is not a CSS curtain.'}
-          </p>
           <Link className="primary-link" to="/">
             Back to Discover
           </Link>

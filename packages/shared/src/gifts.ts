@@ -20,13 +20,21 @@ export const giftCatalogItemSchema = z.object({
 export type GiftCatalogItem = z.infer<typeof giftCatalogItemSchema>;
 
 /**
- * The 70/30 split (PROJECT_BRIEF §1). Fee rounds DOWN so the creator never
+ * Revenue splits (PROJECT_BRIEF §1). Fee rounds DOWN so the creator never
  * receives less than (1 - fee) of the total; the platform absorbs rounding.
  */
+export function computeSplit(
+  total: number,
+  feeFraction: number,
+): { creatorCoins: number; feeCoins: number } {
+  const feeCoins = Math.floor(total * feeFraction);
+  return { creatorCoins: total - feeCoins, feeCoins };
+}
+
+/** The 70/30 gift split. */
 export function computeGiftSplit(totalDiamonds: number): {
   creatorCoins: number;
   feeCoins: number;
 } {
-  const feeCoins = Math.floor(totalDiamonds * PLATFORM_FEES.gift);
-  return { creatorCoins: totalDiamonds - feeCoins, feeCoins };
+  return computeSplit(totalDiamonds, PLATFORM_FEES.gift);
 }

@@ -41,6 +41,11 @@ Read PROJECT_BRIEF.md first; it is the authoritative spec. This file is the quic
   Wallet / Me) + full-bleed live room (overlay chat, action rail, swipe/chevron
   next-stream, bottom-sheet gift drawer, gate screen). Wallet is view-only on mobile
   until RevenueCat IAP.
+- **Phase 6 core done** (verified 11/11): PPV unlock = PPV_UNLOCK ledger tx (75/25)
+  - stream_access_grant with SERVER-derived idempotency (`ppv:{stream}:{user}` — pay
+    once across devices); unlock buttons on web + mobile gates; private-stream INVITE
+    endpoint. Chat gateway auth moved to socket middleware (fixes a connect race).
+    Subscriptions deferred pending owner sign-off on the coin peg (docs/deferred.md).
 - **docs/deferred.md is the skip ledger** — every intentionally skipped item lives
   there. Add to it when skipping; review it at each phase boundary.
 - Remote: `github.com/Boltworks-lab/grid_livestream` (repo-scoped credential —

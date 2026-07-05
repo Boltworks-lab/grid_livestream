@@ -13,6 +13,19 @@ of every phase; delete entries when done. (CLAUDE.md points here.)
 | Sentry, all apps (Phase 2)                                            | DSN(s) from sentry.io                            | `SENTRY_DSN`                                                                                 |
 | Zendesk + Metabase sign-off                                           | Owner vendor/cost approval                       | ADR 0003 records the recommendation                                                          |
 
+## Phase 6 deferrals
+
+- **Subscriptions (owner decision needed first)**: Stripe Billing on web is unblocked
+  (test keys exist), but crediting the creator requires pegging fiat to coins. Proposal:
+  **1 coin = $0.01** (consistent with diamond packages ≈ 1¢/diamond), so a $4.99/mo sub
+  credits the creator 70% = 349 coins per period via a SUB ledger tx on `invoice.paid`.
+  Owner should confirm the peg + monthly price before this ships. Mobile subs need
+  RevenueCat (already owner-blocked).
+- **SUBS-gated streams**: the entitlement branch exists and is enforced; until
+  subscriptions ship, SUBS streams are only enterable via creator INVITE grants.
+- **Unlock for scheduled (not-yet-live) streams** — unlock currently requires the
+  stream to not be ENDED; pre-purchase of scheduled streams is a product call.
+
 ## Phase 4 deferrals
 
 - **LiveKit Cloud keys** (owner-blocked): create a project at cloud.livekit.io (free

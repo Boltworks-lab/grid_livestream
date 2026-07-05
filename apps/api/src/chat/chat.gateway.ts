@@ -48,24 +48,30 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   afterInit(server: Server) {
     this.chat.bindServer(server);
+    // Auth as MIDDLEWARE, not in handleConnection: the handshake (and therefore
+    // the client's 'connect' event) only completes after socket.data is fully
+    // initialized — otherwise an immediate stream:join races an undefined state.
+    server.use(async (socket, next) => {
+      try {
+        const token = socket.handshake.auth?.token as string | undefined;
+        if (!token) throw new Error('missing token');
+        const user = await this.jwt.verifyAsync<AccessTokenPayload>(token);
+        const profile = await this.prisma.creatorProfile.findUnique({
+          where: { userId: user.sub },
+          select: { level: true },
+        });
+        (socket.data as SocketData).user = user;
+        (socket.data as SocketData).level = profile?.level ?? 0;
+        (socket.data as SocketData).joined = new Set();
+        next();
+      } catch {
+        next(new Error('unauthorized'));
+      }
+    });
   }
 
-  async handleConnection(socket: Socket) {
-    try {
-      const token = socket.handshake.auth?.token as string | undefined;
-      if (!token) throw new Error('missing token');
-      const user = await this.jwt.verifyAsync<AccessTokenPayload>(token);
-      const profile = await this.prisma.creatorProfile.findUnique({
-        where: { userId: user.sub },
-        select: { level: true },
-      });
-      (socket.data as SocketData).user = user;
-      (socket.data as SocketData).level = profile?.level ?? 0;
-      (socket.data as SocketData).joined = new Set();
-    } catch {
-      socket.emit('error', 'unauthorized');
-      socket.disconnect(true);
-    }
+  handleConnection() {
+    // auth + socket.data initialization happen in the middleware above
   }
 
   async handleDisconnect(socket: Socket) {
@@ -78,6 +84,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('stream:join')
   async onJoin(@ConnectedSocket() socket: Socket, @MessageBody() body: unknown): Promise<Ack> {
     const data = socket.data as SocketData;
+    if (!data.user || !data.joined) return { ok: false, error: 'unauthorized' };
     const parsed = streamJoinSchema.safeParse(body);
     if (!parsed.success) return { ok: false, error: 'invalid payload' };
     const { streamId } = parsed.data;
@@ -99,6 +106,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('stream:leave')
   async onLeave(@ConnectedSocket() socket: Socket, @MessageBody() body: unknown): Promise<Ack> {
     const data = socket.data as SocketData;
+    if (!data.user || !data.joined) return { ok: false, error: 'unauthorized' };
     const parsed = streamJoinSchema.safeParse(body);
     if (!parsed.success) return { ok: false, error: 'invalid payload' };
     const { streamId } = parsed.data;
@@ -111,6 +119,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('chat:send')
   async onChatSend(@ConnectedSocket() socket: Socket, @MessageBody() body: unknown): Promise<Ack> {
     const data = socket.data as SocketData;
+    if (!data.user || !data.joined) return { ok: false, error: 'unauthorized' };
     const parsed = chatSendSchema.safeParse(body);
     if (!parsed.success) return { ok: false, error: 'invalid payload' };
     const { streamId, body: text } = parsed.data;

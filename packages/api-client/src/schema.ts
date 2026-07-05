@@ -945,7 +945,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** PPV unlock (ledger tx + stream_access_grant; token minted separately) */
+    /** PPV unlock (ledger tx + stream_access_grant; idempotency is server-derived per viewer+stream) */
     post: {
       parameters: {
         query?: never;
@@ -955,24 +955,66 @@ export interface paths {
         };
         cookie?: never;
       };
-      requestBody: {
-        content: {
-          'application/json': {
-            /** Format: uuid */
-            idempotencyKey: string;
+      requestBody?: never;
+      responses: {
+        /** @description Unlocked — grant persisted (idempotent) */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              unlocked: boolean;
+              /** @description balance after */
+              diamonds: number;
+            };
           };
         };
-      };
-      responses: {
-        /** @description Unlocked — grant persisted */
-        201: {
+        400: components['responses']['Error'];
+        /** @description Insufficient diamonds */
+        422: {
           headers: {
             [name: string]: unknown;
           };
           content?: never;
         };
-        /** @description Insufficient diamonds */
-        402: {
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/streams/{id}/invites': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Creator invites a viewer into a private stream (INVITE grant) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': {
+            handle: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Invited (idempotent) */
+        204: {
           headers: {
             [name: string]: unknown;
           };

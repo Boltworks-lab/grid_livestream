@@ -407,21 +407,38 @@ paths:
   /gates/{streamId}/unlock:
     post:
       tags: [gates]
-      summary: PPV unlock (ledger tx + stream_access_grant; token minted separately)
+      summary: PPV unlock (ledger tx + stream_access_grant; idempotency is server-derived per viewer+stream)
       parameters:
         [{ name: streamId, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '201':
+          description: Unlocked — grant persisted (idempotent)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [unlocked, diamonds]
+                properties:
+                  unlocked: { type: boolean }
+                  diamonds: { type: integer, description: balance after }
+        '400': { $ref: '#/components/responses/Error' }
+        '422': { description: Insufficient diamonds }
+  /streams/{id}/invites:
+    post:
+      tags: [gates]
+      summary: Creator invites a viewer into a private stream (INVITE grant)
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [idempotencyKey]
+              required: [handle]
               properties:
-                idempotencyKey: { type: string, format: uuid }
+                handle: { type: string }
       responses:
-        '201': { description: Unlocked — grant persisted }
-        '402': { description: Insufficient diamonds }
+        '204': { description: Invited (idempotent) }
 
   # ── payments webhooks (Phase 3; §3.3 source of truth) ─────────────────────
   /payments/webhooks/stripe:
