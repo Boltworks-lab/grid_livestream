@@ -22,6 +22,10 @@ const envSchema = z
     STRIPE_WEBHOOK_SECRET: z.string().default(''),
     /** where Stripe Checkout returns the browser (defaults to the web app) */
     TOPUP_RETURN_ORIGIN: z.string().url().default('http://localhost:5173'),
+    /** LiveKit Cloud (owner-blocked, docs/deferred.md); media endpoints 503 until set */
+    LIVEKIT_URL: z.string().default(''),
+    LIVEKIT_API_KEY: z.string().default(''),
+    LIVEKIT_API_SECRET: z.string().default(''),
     /** access token TTL in seconds */
     JWT_ACCESS_TTL: z.coerce.number().int().positive().default(900),
     /** refresh token TTL in days */

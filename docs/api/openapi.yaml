@@ -245,6 +245,23 @@ paths:
                   url: { type: string, description: LiveKit server URL }
         '402': { description: 'Gated: purchase or subscription required' }
         '403': { $ref: '#/components/responses/Error' }
+  /streams/{id}/go-live:
+    post:
+      tags: [streams]
+      summary: Transition own stream to LIVE (creates the media room when configured)
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '200': { description: Live }
+        '403': { $ref: '#/components/responses/Error' }
+  /streams/{id}/chat/{messageId}:
+    delete:
+      tags: [streams]
+      summary: 'Creator moderation: hide a chat message in your own stream'
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: messageId, in: path, required: true, schema: { type: string } }
+      responses:
+        '204': { description: Hidden and broadcast as removed }
   /streams/{id}/end:
     post:
       tags: [streams]
@@ -493,8 +510,8 @@ components:
       properties:
         title: { type: string, maxLength: 120 }
         category: { type: string }
-        visibility: { type: string, enum: [public, followers, private], default: public }
-        access: { type: string, enum: [free, ppv, subs], default: free }
+        visibility: { type: string, enum: [PUBLIC, FOLLOWERS, PRIVATE], default: PUBLIC }
+        access: { type: string, enum: [FREE, PPV, SUBS], default: FREE }
         ppvPriceDiamonds: { type: integer, minimum: 1, description: required when access=ppv }
     Stream:
       type: object
@@ -506,10 +523,10 @@ components:
         title: { type: string }
         category: { type: string, nullable: true }
         thumbnailUrl: { type: string, nullable: true }
-        visibility: { type: string, enum: [public, followers, private] }
-        access: { type: string, enum: [free, ppv, subs] }
+        visibility: { type: string, enum: [PUBLIC, FOLLOWERS, PRIVATE] }
+        access: { type: string, enum: [FREE, PPV, SUBS] }
         ppvPriceDiamonds: { type: integer, nullable: true }
-        status: { type: string, enum: [scheduled, live, ended] }
+        status: { type: string, enum: [SCHEDULED, LIVE, ENDED] }
         viewerCount: { type: integer }
         startedAt: { type: string, format: date-time, nullable: true }
         entitled: { type: boolean, description: whether the caller may join (server-computed) }

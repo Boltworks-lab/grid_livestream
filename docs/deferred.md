@@ -13,6 +13,22 @@ of every phase; delete entries when done. (CLAUDE.md points here.)
 | Sentry, all apps (Phase 2)                                            | DSN(s) from sentry.io                            | `SENTRY_DSN`                                                                                 |
 | Zendesk + Metabase sign-off                                           | Owner vendor/cost approval                       | ADR 0003 records the recommendation                                                          |
 
+## Phase 4 deferrals
+
+- **LiveKit Cloud keys** (owner-blocked): create a project at cloud.livekit.io (free
+  tier) → `LIVEKIT_URL` / `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` in apps/api/.env.
+  Until then `/streams/{id}/token` 503s; unlocks: video publish/subscribe, the
+  `room_finished` webhook (auto-end streams), `RemoveParticipant` revocation.
+- **Web Discover + live-room UI** — API + gateway are verified; screens next.
+- **Mobile Discover / full-bleed live room / swipe-next / gift drawer** — after web.
+- **Creator mute + slow-mode** — only message removal shipped; muted-user tracking
+  with the moderation work (§8).
+- **Entitlement unit tests** for FOLLOWERS/PRIVATE/SUBS branches (live verification
+  covered PPV + FREE paths; the service is small and typed but untested branches exist).
+- **Per-live-stream Redis Streams** — persistence uses ONE global stream + consumer
+  group (simpler consumer discovery); revisit against ADR 0002's per-stream design
+  when fanout demands, plus a retention/eviction policy for the stream key.
+
 ## Phase 3 deferrals
 
 - **RevenueCat mobile IAP** (owner-blocked): needs a RevenueCat account + store

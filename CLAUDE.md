@@ -24,6 +24,12 @@ Read PROJECT_BRIEF.md first; it is the authoritative spec. This file is the quic
   reconciliation script (`pnpm --filter @grid/api reconcile`), Testcontainers +
   fast-check invariant suite (12 tests). Stripe TEST keys live in apps/api/.env
   (gitignored). Remaining: see Phase 3 section of docs/deferred.md.
+- **Phase 4 backbone done**: streams lifecycle (create/go-live/end), discover feed,
+  entitlement gate (§3.4 enforced for chat AND media tokens), Socket.IO gateway on
+  /rt with Redis adapter (join/leave, chat, presence, throttled viewer counts, rate
+  limits), ADR-0002 batch persistence, creator message removal. Verified live 13/13
+  (two socket clients, gated join rejected, 402/503 token paths, persistence).
+  LiveKit video = owner-blocked on keys; web/mobile live UI pending (deferred.md).
 - **docs/deferred.md is the skip ledger** — every intentionally skipped item lives
   there. Add to it when skipping; review it at each phase boundary.
 - Remote: `github.com/Boltworks-lab/grid_livestream` (repo-scoped credential —

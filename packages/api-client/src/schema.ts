@@ -526,6 +526,80 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/streams/{id}/go-live': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Transition own stream to LIVE (creates the media room when configured) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Live */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+        403: components['responses']['Error'];
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/streams/{id}/chat/{messageId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Creator moderation: hide a chat message in your own stream */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+          messageId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Hidden and broadcast as removed */
+        204: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/streams/{id}/end': {
     parameters: {
       query?: never;
@@ -1100,15 +1174,15 @@ export interface components {
       title: string;
       category?: string;
       /**
-       * @default public
+       * @default PUBLIC
        * @enum {string}
        */
-      visibility: 'public' | 'followers' | 'private';
+      visibility: 'PUBLIC' | 'FOLLOWERS' | 'PRIVATE';
       /**
-       * @default free
+       * @default FREE
        * @enum {string}
        */
-      access: 'free' | 'ppv' | 'subs';
+      access: 'FREE' | 'PPV' | 'SUBS';
       /** @description required when access=ppv */
       ppvPriceDiamonds?: number;
     };
@@ -1122,12 +1196,12 @@ export interface components {
       category?: string | null;
       thumbnailUrl?: string | null;
       /** @enum {string} */
-      visibility: 'public' | 'followers' | 'private';
+      visibility: 'PUBLIC' | 'FOLLOWERS' | 'PRIVATE';
       /** @enum {string} */
-      access: 'free' | 'ppv' | 'subs';
+      access: 'FREE' | 'PPV' | 'SUBS';
       ppvPriceDiamonds?: number | null;
       /** @enum {string} */
-      status: 'scheduled' | 'live' | 'ended';
+      status: 'SCHEDULED' | 'LIVE' | 'ENDED';
       viewerCount?: number;
       /** Format: date-time */
       startedAt?: string | null;
