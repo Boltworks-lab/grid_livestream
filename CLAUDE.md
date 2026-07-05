@@ -15,8 +15,11 @@ Read PROJECT_BRIEF.md first; it is the authoritative spec. This file is the quic
   Postgres; @grid/api-client now real (openapi-typescript + openapi-fetch, generated
   from docs/api/openapi.yaml — regenerate via `pnpm --filter @grid/api-client generate`
   after contract changes); packages build dual CJS+ESM via tsup; web auth + profile
-  screens live against the API (ui-tokens via CSS vars).
-  Remaining: mobile auth screens, email OTP, Google/Apple OAuth, Sentry.
+  screens live against the API (ui-tokens via CSS vars); mobile auth + profile screens
+  (expo-secure-store sessions, API URL derived from the Metro host).
+  Remaining in Phase 2: email OTP, Google/Apple OAuth, Sentry — all owner-blocked.
+- **docs/deferred.md is the skip ledger** — every intentionally skipped item lives
+  there. Add to it when skipping; review it at each phase boundary.
 - Remote: `github.com/Boltworks-lab/grid_livestream` (repo-scoped credential —
   `credential.useHttpPath true`). Local Postgres runs on **host port 5433** (native
   Windows Postgres owns 5432); Redis on 6379. Mobile is pinned to **Expo SDK 54**
