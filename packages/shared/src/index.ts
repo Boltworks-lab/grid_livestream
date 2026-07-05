@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export * from './auth';
+export * from './gifts';
 export * from './streams';
 export * from './wallet';
 export * from './ws-events';

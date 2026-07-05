@@ -369,8 +369,39 @@ paths:
                 qty: { type: integer, minimum: 1, maximum: 99 }
                 idempotencyKey: { type: string, format: uuid }
       responses:
-        '201': { description: 'Gift sent; broadcast via WS gift:sent' }
-        '402': { description: Insufficient diamonds }
+        '201':
+          description: 'Gift sent; broadcast via WS gift:sent'
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [diamonds, combo]
+                properties:
+                  diamonds: { type: integer, description: caller balance after }
+                  combo: { type: integer }
+        '404': { $ref: '#/components/responses/Error' }
+        '422': { description: Insufficient diamonds }
+
+  /streams/{id}/top-gifters:
+    get:
+      security: []
+      tags: [gifts]
+      summary: Top three gifters of a live stream (session-scoped)
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [userId, handle, total]
+                  properties:
+                    userId: { type: string, format: uuid }
+                    handle: { type: string }
+                    total: { type: integer }
 
   # ── gates (Phase 6) ────────────────────────────────────────────────────────
   /gates/{streamId}/unlock:

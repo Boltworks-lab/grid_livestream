@@ -12,6 +12,8 @@ export default tseslint.config(
       '**/.expo/**',
       '**/.turbo/**',
       '**/coverage/**',
+      // plain-CJS seed/migration scripts run by the prisma CLI
+      'apps/*/prisma/**',
       // Prototypes are reference-only and stay untouched (PROJECT_BRIEF §13).
       'prototypes/**',
     ],

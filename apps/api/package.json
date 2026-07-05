@@ -12,7 +12,11 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
+    "db:seed": "node prisma/seed.js",
     "reconcile": "node dist/scripts/reconcile.js"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   },
   "dependencies": {
     "@grid/shared": "workspace:*",

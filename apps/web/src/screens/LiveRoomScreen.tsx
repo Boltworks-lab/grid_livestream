@@ -1,4 +1,10 @@
-import type { ChatMessage, PresenceEvent, StreamSummary, ViewerCount } from '@grid/shared';
+import type {
+  ChatMessage,
+  GiftSent,
+  PresenceEvent,
+  StreamSummary,
+  ViewerCount,
+} from '@grid/shared';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import type { Socket } from 'socket.io-client';
@@ -6,6 +12,14 @@ import type { Socket } from 'socket.io-client';
 import { useAuth } from '../auth/AuthContext';
 import { api } from '../lib/api';
 import { connectRealtime, emitWithAck } from '../lib/realtime';
+import { GiftBar } from './GiftBar';
+
+interface FloatingGift {
+  key: string;
+  emoji: string;
+  tier: number;
+  left: number;
+}
 
 type ChatLine =
   { type: 'message'; message: ChatMessage } | { type: 'system'; id: string; text: string };
@@ -24,6 +38,7 @@ export function LiveRoomScreen() {
   const [videoState, setVideoState] = useState<'checking' | 'unconfigured' | 'ready' | 'blocked'>(
     'checking',
   );
+  const [floats, setFloats] = useState<FloatingGift[]>([]);
   const socketRef = useRef<Socket | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
 
@@ -83,6 +98,30 @@ export function LiveRoomScreen() {
     );
     socket.on('stream:status', ({ status }: { status: string }) => {
       if (status === 'ended') setEnded(true);
+    });
+    socket.on('gift:sent', (gift: GiftSent) => {
+      const emoji = gift.emoji ?? '🎁';
+      // bigger gifts burst more emojis (animation tiers from the catalog)
+      const burst = 1 + gift.animationTier * 2;
+      const newFloats = Array.from({ length: burst }, (_, i) => ({
+        key: `${gift.streamId}-${gift.sentAt}-${i}-${Math.random()}`,
+        emoji,
+        tier: gift.animationTier,
+        left: 15 + Math.random() * 70,
+      }));
+      setFloats((prev) => [...prev.slice(-30), ...newFloats]);
+      setTimeout(
+        () => setFloats((prev) => prev.filter((f) => !newFloats.some((n) => n.key === f.key))),
+        3000,
+      );
+      setLines((prev) => [
+        ...prev.slice(-199),
+        {
+          type: 'system',
+          id: `gift-${gift.sentAt}-${Math.random()}`,
+          text: `@${gift.senderHandle} sent ${gift.giftName} ${emoji}${gift.qty > 1 ? ` ×${gift.qty}` : ''}${gift.combo > 1 ? ` (combo ×${gift.combo})` : ''}`,
+        },
+      ]);
     });
 
     return () => {
@@ -166,6 +205,17 @@ export function LiveRoomScreen() {
     <main className="live-wrap">
       <section className="video-col">
         <div className="video-area">
+          <div className="float-layer" aria-hidden="true">
+            {floats.map((f) => (
+              <span
+                key={f.key}
+                className="float-gift"
+                style={{ left: `${f.left}%`, fontSize: `${22 + f.tier * 10}px` }}
+              >
+                {f.emoji}
+              </span>
+            ))}
+          </div>
           {ended ? (
             <div className="video-note">
               <b>Stream ended</b>
@@ -233,6 +283,7 @@ export function LiveRoomScreen() {
             ),
           )}
         </div>
+        {!isCreator && !ended && <GiftBar streamId={stream.id} disabled={ended} />}
         {chatError && <p className="error small">{chatError}</p>}
         <form className="chat-input" onSubmit={(e) => void send(e)}>
           <input name="body" maxLength={500} placeholder="Say something…" disabled={ended} />

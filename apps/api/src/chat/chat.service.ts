@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import type { ChatMessage } from '@grid/shared';
+import type { ChatMessage, GiftSent } from '@grid/shared';
 import { Inject, Injectable } from '@nestjs/common';
 import Redis from 'ioredis';
 import type { Server } from 'socket.io';
@@ -63,6 +63,10 @@ export class ChatService {
       where: { id: messageId, streamId, hiddenAt: null },
       data: { hiddenAt: new Date(), hiddenReason: 'creator_removed' },
     });
+  }
+
+  broadcastGift(event: GiftSent): void {
+    this.server?.to(`stream:${event.streamId}`).emit('gift:sent', event);
   }
 
   broadcastStreamStatus(streamId: string, status: 'scheduled' | 'live' | 'ended'): void {

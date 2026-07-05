@@ -754,3 +754,87 @@ select {
   font-weight: 600;
   margin: 0;
 }
+
+/* ── gifts ── */
+.gift-bar {
+  border-top: 1px solid var(--a-border);
+  padding: 8px 10px 0;
+}
+
+.gift-scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.gift-btn {
+  background: var(--bg2);
+  border: 1px solid var(--a-border);
+  border-radius: var(--r);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 7px 10px;
+  flex-shrink: 0;
+  transition: border-color 0.15s;
+}
+
+.gift-btn:hover {
+  border-color: var(--amber);
+}
+
+.gift-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.gift-emoji {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.gift-price {
+  color: var(--amber2);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.gift-bar .error {
+  padding: 0 4px 8px;
+  margin: 0;
+}
+
+.float-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.float-gift {
+  position: absolute;
+  bottom: -40px;
+  animation: gift-rise 2.8s ease-out forwards;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+}
+
+@keyframes gift-rise {
+  0% {
+    transform: translateY(0) scale(0.6) rotate(-8deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-70vh) scale(1.25) rotate(8deg);
+    opacity: 0;
+  }
+}
+
+.video-area {
+  position: relative;
+}

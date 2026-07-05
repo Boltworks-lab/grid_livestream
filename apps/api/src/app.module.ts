@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { ChatModule } from './chat/chat.module';
 import { env } from './config/env';
+import { GiftsModule } from './gifts/gifts.module';
 import { HealthController } from './health/health.controller';
 import { PaymentsModule } from './payments/payments.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -37,6 +38,7 @@ import { WalletModule } from './wallet/wallet.module';
     PaymentsModule,
     StreamsModule,
     ChatModule,
+    GiftsModule,
   ],
   controllers: [HealthController],
   providers: [

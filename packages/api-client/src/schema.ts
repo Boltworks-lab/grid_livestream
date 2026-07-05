@@ -869,10 +869,17 @@ export interface paths {
           headers: {
             [name: string]: unknown;
           };
-          content?: never;
+          content: {
+            'application/json': {
+              /** @description caller balance after */
+              diamonds: number;
+              combo: number;
+            };
+          };
         };
+        404: components['responses']['Error'];
         /** @description Insufficient diamonds */
-        402: {
+        422: {
           headers: {
             [name: string]: unknown;
           };
@@ -880,6 +887,49 @@ export interface paths {
         };
       };
     };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/streams/{id}/top-gifters': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Top three gifters of a live stream (session-scoped) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          id: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** Format: uuid */
+              userId: string;
+              handle: string;
+              total: number;
+            }[];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;

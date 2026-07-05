@@ -14,7 +14,11 @@ function NavBar() {
   const [diamonds, setDiamonds] = useState<number | null>(null);
 
   useEffect(() => {
-    void api.GET('/wallet').then(({ data }) => data && setDiamonds(data.diamonds));
+    const load = () =>
+      void api.GET('/wallet').then(({ data }) => data && setDiamonds(data.diamonds));
+    load();
+    window.addEventListener('grid:wallet-changed', load);
+    return () => window.removeEventListener('grid:wallet-changed', load);
   }, []);
 
   return (
