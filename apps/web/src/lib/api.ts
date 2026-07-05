@@ -16,7 +16,9 @@ export const tokenStore = {
   },
 };
 
+export const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001';
+
 export const api = createGridClient({
-  baseUrl: import.meta.env.VITE_API_URL ?? 'http://localhost:3001',
+  baseUrl: API_BASE,
   getAccessToken: tokenStore.getAccess,
 });

@@ -29,7 +29,10 @@ Read PROJECT_BRIEF.md first; it is the authoritative spec. This file is the quic
   /rt with Redis adapter (join/leave, chat, presence, throttled viewer counts, rate
   limits), ADR-0002 batch persistence, creator message removal. Verified live 13/13
   (two socket clients, gated join rejected, 402/503 token paths, persistence).
-  LiveKit video = owner-blocked on keys; web/mobile live UI pending (deferred.md).
+  LiveKit video = owner-blocked on keys. Web live UI shipped: router (/, /stream/:id,
+  /go-live, /me), Discover grid with lock badges, Go Live form, live room with working
+  chat + creator moderation + gate screen; video slot mounts LiveKit once keys exist.
+  Mobile live UI pending (deferred.md).
 - **docs/deferred.md is the skip ledger** — every intentionally skipped item lives
   there. Add to it when skipping; review it at each phase boundary.
 - Remote: `github.com/Boltworks-lab/grid_livestream` (repo-scoped credential —

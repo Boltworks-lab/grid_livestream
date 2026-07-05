@@ -15,7 +15,9 @@
     "@grid/shared": "workspace:*",
     "@grid/ui-tokens": "workspace:*",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "react-router-dom": "^7.1.0",
+    "socket.io-client": "^4.8.0"
   },
   "devDependencies": {
     "@testing-library/dom": "^10.4.0",

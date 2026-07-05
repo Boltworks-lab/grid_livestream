@@ -19,8 +19,11 @@ of every phase; delete entries when done. (CLAUDE.md points here.)
   tier) → `LIVEKIT_URL` / `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` in apps/api/.env.
   Until then `/streams/{id}/token` 503s; unlocks: video publish/subscribe, the
   `room_finished` webhook (auto-end streams), `RemoveParticipant` revocation.
-- **Web Discover + live-room UI** — API + gateway are verified; screens next.
-- **Mobile Discover / full-bleed live room / swipe-next / gift drawer** — after web.
+- **LiveKit player mount** — the web live room mints a token and reserves the video
+  area; mount `@livekit/components-react` playback once keys exist (one component).
+- **Mobile Discover / full-bleed live room / swipe-next / gift drawer** — web live
+  UI shipped 2026-07-04; mobile screens are the remaining Phase 4 UI.
+- **Playwright e2e for the web flows** (signup → go live → chat) — brief §10.
 - **Creator mute + slow-mode** — only message removal shipped; muted-user tracking
   with the moderation work (§8).
 - **Entitlement unit tests** for FOLLOWERS/PRIVATE/SUBS branches (live verification
