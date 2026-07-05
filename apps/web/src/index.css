@@ -225,3 +225,133 @@ button.primary:disabled {
   color: var(--green);
   font-size: 12px;
 }
+
+/* ── wallet ── */
+.banner {
+  background: var(--a-purpleGlow);
+  border: 1px solid var(--a-borderAccent);
+  border-radius: var(--r);
+  color: var(--purple2);
+  font-size: 12px;
+  padding: 10px 14px;
+}
+
+.linkish {
+  background: none;
+  border: none;
+  color: var(--t3);
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+}
+
+.balances {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.balance {
+  flex: 1;
+  background: var(--bg2);
+  border: 1px solid var(--a-border);
+  border-radius: var(--r);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bal-label {
+  color: var(--t2);
+  font-size: 12px;
+}
+
+.bal-diamonds {
+  color: var(--amber2);
+  font-size: 20px;
+}
+
+.bal-coins {
+  color: var(--teal);
+  font-size: 20px;
+}
+
+h4 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--t2);
+  font-weight: 600;
+}
+
+.packages {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.package {
+  background: var(--bg2);
+  border: 1px solid var(--a-border);
+  border-radius: var(--r);
+  color: var(--t1);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font: inherit;
+  padding: 12px 14px;
+  text-align: left;
+  transition: border-color 0.15s;
+}
+
+.package:hover {
+  border-color: var(--amber);
+}
+
+.package:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.pack-diamonds {
+  color: var(--amber2);
+  font-weight: 600;
+}
+
+.pack-bonus {
+  color: var(--green);
+  font-size: 11px;
+}
+
+.pack-price {
+  color: var(--t2);
+  font-size: 12px;
+}
+
+.history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.history li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid var(--a-border);
+  padding: 9px 2px;
+  font-size: 13px;
+}
+
+.amount-in {
+  color: var(--green);
+  font-weight: 600;
+}
+
+.amount-out {
+  color: var(--red);
+  font-weight: 600;
+}

@@ -18,6 +18,12 @@ Read PROJECT_BRIEF.md first; it is the authoritative spec. This file is the quic
   screens live against the API (ui-tokens via CSS vars); mobile auth + profile screens
   (expo-secure-store sessions, API URL derived from the Metro host).
   Remaining in Phase 2: email OTP, Google/Apple OAuth, Sentry — all owner-blocked.
+- **Phase 3 core done**: double-entry LedgerService (idempotency keys, per-currency
+  zero-sum, FOR UPDATE row locks against overdraw), Stripe Checkout top-ups + signature-
+  verified webhook crediting (exactly once), wallet endpoints + web wallet UI,
+  reconciliation script (`pnpm --filter @grid/api reconcile`), Testcontainers +
+  fast-check invariant suite (12 tests). Stripe TEST keys live in apps/api/.env
+  (gitignored). Remaining: see Phase 3 section of docs/deferred.md.
 - **docs/deferred.md is the skip ledger** — every intentionally skipped item lives
   there. Add to it when skipping; review it at each phase boundary.
 - Remote: `github.com/Boltworks-lab/grid_livestream` (repo-scoped credential —

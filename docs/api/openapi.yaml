@@ -264,6 +264,19 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/WalletBalances' }
+  /wallet/packages:
+    get:
+      security: []
+      tags: [wallet]
+      summary: Diamond top-up packages (server-authoritative prices)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/DiamondPackage' }
   /wallet/transactions:
     get:
       tags: [wallet]
@@ -302,8 +315,11 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [checkoutUrl]
                 properties:
                   checkoutUrl: { type: string }
+        '400': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
 
   # ── gifts (Phase 5) ────────────────────────────────────────────────────────
   /gifts/catalog:
@@ -508,11 +524,18 @@ components:
       required: [id, kind, createdAt]
       properties:
         id: { type: string, format: uuid }
-        kind: { type: string, enum: [topup, gift, ppv_unlock, sub, payout, refund, adjustment] }
+        kind: { type: string, enum: [TOPUP, GIFT, PPV_UNLOCK, SUB, PAYOUT, REFUND, ADJUSTMENT] }
         amount: { type: integer, description: signed from the caller's perspective }
-        currency: { type: string, enum: [diamond, coin] }
-        metadata: { type: object, additionalProperties: true }
+        currency: { type: string, enum: [DIAMOND, COIN] }
         createdAt: { type: string, format: date-time }
+    DiamondPackage:
+      type: object
+      required: [id, diamonds, bonus, usdCents]
+      properties:
+        id: { type: string }
+        diamonds: { type: integer }
+        bonus: { type: integer }
+        usdCents: { type: integer }
     GiftCatalogItem:
       type: object
       required: [id, name, priceDiamonds, animationTier]

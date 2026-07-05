@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { useAuth } from '../auth/AuthContext';
 import { api } from '../lib/api';
+import { WalletPanel } from './WalletPanel';
 
 export function HomeScreen() {
   const { user, logout, refreshUser } = useAuth();
@@ -51,6 +52,8 @@ export function HomeScreen() {
           Phase 2 shell — Discover, live rooms, wallet and gifting arrive in Phases 3–5.
         </p>
       </section>
+
+      <WalletPanel />
 
       <section className="panel">
         <h3>Profile</h3>

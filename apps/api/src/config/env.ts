@@ -17,6 +17,11 @@ const envSchema = z
     JWT_SECRET: z.string().min(32).default('dev-only-secret-change-me-0123456789abcdef'),
     /** comma-separated browser origins allowed by CORS */
     CORS_ORIGINS: z.string().default('http://localhost:5173,http://localhost:5174'),
+    /** Stripe test-mode keys; checkout/webhooks throw a clear error when unset */
+    STRIPE_SECRET_KEY: z.string().default(''),
+    STRIPE_WEBHOOK_SECRET: z.string().default(''),
+    /** where Stripe Checkout returns the browser (defaults to the web app) */
+    TOPUP_RETURN_ORIGIN: z.string().url().default('http://localhost:5173'),
     /** access token TTL in seconds */
     JWT_ACCESS_TTL: z.coerce.number().int().positive().default(900),
     /** refresh token TTL in days */

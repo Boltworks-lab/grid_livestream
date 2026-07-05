@@ -598,6 +598,42 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/wallet/packages': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Diamond top-up packages (server-authoritative prices) */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['DiamondPackage'][];
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/wallet/transactions': {
     parameters: {
       query?: never;
@@ -674,10 +710,12 @@ export interface paths {
           };
           content: {
             'application/json': {
-              checkoutUrl?: string;
+              checkoutUrl: string;
             };
           };
         };
+        400: components['responses']['Error'];
+        503: components['responses']['Error'];
       };
     };
     delete?: never;
@@ -1106,16 +1144,19 @@ export interface components {
       /** Format: uuid */
       id: string;
       /** @enum {string} */
-      kind: 'topup' | 'gift' | 'ppv_unlock' | 'sub' | 'payout' | 'refund' | 'adjustment';
+      kind: 'TOPUP' | 'GIFT' | 'PPV_UNLOCK' | 'SUB' | 'PAYOUT' | 'REFUND' | 'ADJUSTMENT';
       /** @description signed from the caller's perspective */
       amount?: number;
       /** @enum {string} */
-      currency?: 'diamond' | 'coin';
-      metadata?: {
-        [key: string]: unknown;
-      };
+      currency?: 'DIAMOND' | 'COIN';
       /** Format: date-time */
       createdAt: string;
+    };
+    DiamondPackage: {
+      id: string;
+      diamonds: number;
+      bonus: number;
+      usdCents: number;
     };
     GiftCatalogItem: {
       id: string;

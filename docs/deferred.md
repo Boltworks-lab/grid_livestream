@@ -13,6 +13,22 @@ of every phase; delete entries when done. (CLAUDE.md points here.)
 | Sentry, all apps (Phase 2)                                            | DSN(s) from sentry.io                            | `SENTRY_DSN`                                                                                 |
 | Zendesk + Metabase sign-off                                           | Owner vendor/cost approval                       | ADR 0003 records the recommendation                                                          |
 
+## Phase 3 deferrals
+
+- **RevenueCat mobile IAP** (owner-blocked): needs a RevenueCat account + store
+  products; mobile diamond purchases are web-only until then (brief §2 payments row).
+- **Stripe CLI webhook forwarding**: real Stripe→localhost events need
+  `stripe listen --forward-to localhost:3001/payments/webhooks/stripe`; put the
+  printed `whsec_…` into apps/api/.env `STRIPE_WEBHOOK_SECRET` (currently a local
+  dev secret used by the signed-webhook simulator).
+- **Mobile wallet UI**: balances/history view on the phone (purchases wait on IAP).
+- **k6 load script** for top-up/gifting bursts (Phase 3 exit criterion; ledger-level
+  concurrency is already covered by the Testcontainers suite).
+- **Admin read-only ledger search** — needs staff auth (Phase 8 IAM); reconcile
+  script covers the finance-ops need meanwhile.
+- **Refund flow** (REFUND tx kind exists; webhook handling for charge.refunded lands
+  with chargeback work, brief §7 financial safety).
+
 ## Deferred by design (no input needed — just later)
 
 - **Contract-drift CI gate**: emit OpenAPI from @nestjs/swagger and fail CI when it
