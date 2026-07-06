@@ -1,3 +1,6 @@
+// side-effect import FIRST — Sentry must patch before any other module loads
+import './instrument';
+
 import helmet from 'helmet';
 import { NestFactory } from '@nestjs/core';
 import { Logger } from 'nestjs-pino';

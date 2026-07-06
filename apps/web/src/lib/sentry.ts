@@ -1,0 +1,21 @@
+import * as Sentry from '@sentry/react';
+
+/**
+ * Error tracking (brief §2). No-op unless VITE_SENTRY_DSN is set, so local dev
+ * and CI stay quiet. Reuse the same Sentry project as the API or make a separate
+ * one — either way, set the env var at build time.
+ */
+export function initSentry() {
+  const dsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;
+  if (!dsn) return;
+  Sentry.init({
+    dsn,
+    environment: import.meta.env.MODE,
+    tracesSampleRate: 0.1,
+    // strip the access token from any captured request/breadcrumb
+    beforeSend(event) {
+      if (event.request?.headers) delete event.request.headers.Authorization;
+      return event;
+    },
+  });
+}

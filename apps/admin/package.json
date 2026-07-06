@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@grid/shared": "workspace:*",
+    "@sentry/react": "^10.63.0",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },

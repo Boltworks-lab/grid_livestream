@@ -22,6 +22,9 @@ const envSchema = z
     /** Stripe test-mode keys; checkout/webhooks throw a clear error when unset */
     STRIPE_SECRET_KEY: z.string().default(''),
     STRIPE_WEBHOOK_SECRET: z.string().default(''),
+    /** Sentry error tracking (all apps, brief §2); empty = disabled */
+    SENTRY_DSN: z.string().default(''),
+    SENTRY_TRACES_SAMPLE_RATE: z.coerce.number().min(0).max(1).default(0.1),
     /** where Stripe Checkout returns the browser (defaults to the web app) */
     TOPUP_RETURN_ORIGIN: z.string().url().default('http://localhost:5173'),
     /** LiveKit Cloud (owner-blocked, docs/deferred.md); media endpoints 503 until set */

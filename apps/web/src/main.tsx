@@ -5,7 +5,10 @@ import { BrowserRouter } from 'react-router-dom';
 
 import { App } from './App';
 import { AuthProvider } from './auth/AuthContext';
+import { initSentry } from './lib/sentry';
 import './index.css';
+
+initSentry();
 
 // Bridge the TS design tokens into CSS custom properties — index.css consumes
 // var(--bg0), var(--purple), … exactly like the prototype stylesheet did.
