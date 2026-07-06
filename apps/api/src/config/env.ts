@@ -15,6 +15,8 @@ const envSchema = z
       .default('postgresql://grid:grid@localhost:5433/grid'),
     REDIS_URL: z.string().url().default('redis://localhost:6379'),
     JWT_SECRET: z.string().min(32).default('dev-only-secret-change-me-0123456789abcdef'),
+    /** staff tokens are a SEPARATE trust domain (brief §3.5) */
+    ADMIN_JWT_SECRET: z.string().min(32).default('dev-only-admin-secret-change-me-9876543210fe'),
     /** comma-separated browser origins allowed by CORS */
     CORS_ORIGINS: z.string().default('http://localhost:5173,http://localhost:5174'),
     /** Stripe test-mode keys; checkout/webhooks throw a clear error when unset */
@@ -38,6 +40,13 @@ const envSchema = z
         code: z.ZodIssueCode.custom,
         path: ['JWT_SECRET'],
         message: 'JWT_SECRET must be set explicitly in production',
+      });
+    }
+    if (cfg.NODE_ENV === 'production' && cfg.ADMIN_JWT_SECRET.startsWith('dev-only-admin')) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['ADMIN_JWT_SECRET'],
+        message: 'ADMIN_JWT_SECRET must be set explicitly in production',
       });
     }
   });

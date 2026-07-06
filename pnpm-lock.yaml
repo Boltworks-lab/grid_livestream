@@ -141,6 +141,9 @@ importers:
       nestjs-pino:
         specifier: ^4.3.0
         version: 4.6.1(@nestjs/common@11.1.27(reflect-metadata@0.2.2)(rxjs@7.8.2))(pino-http@10.5.0)(pino@9.14.0)(rxjs@7.8.2)
+      otplib:
+        specifier: ^13.4.1
+        version: 13.4.1
       pino-http:
         specifier: ^10.4.0
         version: 10.5.0
@@ -272,6 +275,15 @@ importers:
       '@grid/ui-tokens':
         specifier: workspace:*
         version: link:../../packages/ui-tokens
+      '@livekit/components-react':
+        specifier: ^2.9.21
+        version: 2.9.21(livekit-client@2.20.0(@types/dom-mediacapture-record@1.0.22))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tslib@2.8.1)
+      '@livekit/components-styles':
+        specifier: ^1.2.0
+        version: 1.2.0
+      livekit-client:
+        specifier: ^2.20.0
+        version: 2.20.0(@types/dom-mediacapture-record@1.0.22)
       react:
         specifier: 19.1.0
         version: 19.1.0
@@ -1485,6 +1497,15 @@ packages:
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
     engines: {node: '>=14'}
 
+  '@floating-ui/core@1.7.5':
+    resolution: {integrity: sha512-1Ih4WTWyw0+lKyFMcBHGbb5U5FtuHJuujoyyr5zTaWS5EYMeT6Jb2AuDeftsCsEuchO+mM2ij5+q9crhydzLhQ==}
+
+  '@floating-ui/dom@1.7.4':
+    resolution: {integrity: sha512-OOchDgh4F2CchOX94cRVqhvy7b3AFb+/rQXyswmzmGakRfkMgoWVjfnLWkRirfLEfuD4ysVW16eXzwt3jHIzKA==}
+
+  '@floating-ui/utils@0.2.11':
+    resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
+
   '@grpc/grpc-js@1.14.4':
     resolution: {integrity: sha512-k9Dj3DV/itK9D06Y8f190Qgop7/Ui+D0njFV3LHMPwPT75DpXLQohE9Wmz0QElrJnzsjB7KPWiKJbOl7IPDArQ==}
     engines: {node: '>=12.10.0'}
@@ -1731,6 +1752,36 @@ packages:
   '@js-sdsl/ordered-map@4.4.2':
     resolution: {integrity: sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw==}
 
+  '@livekit/components-core@0.12.13':
+    resolution: {integrity: sha512-DQmi84afHoHjZ62wm8y+XPNIDHTwFHAltjd3lmyXj8UZHOY7wcza4vFt1xnghJOD5wLRY58L1dkAgAw59MgWvw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      livekit-client: ^2.17.2
+      tslib: ^2.6.2
+
+  '@livekit/components-react@2.9.21':
+    resolution: {integrity: sha512-6hU9VucJJL+gAhilNGe4MBCDCZVk64qyjP9Ck86krvOIdVU76WeWksddg1MYUP10AlUwwrfD7davz41pJTcMJw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@livekit/krisp-noise-filter': ^0.2.12 || ^0.3.0
+      livekit-client: ^2.18.2
+      react: 19.1.0
+      react-dom: 19.1.0
+      tslib: ^2.6.2
+    peerDependenciesMeta:
+      '@livekit/krisp-noise-filter':
+        optional: true
+
+  '@livekit/components-styles@1.2.0':
+    resolution: {integrity: sha512-74/rt0lDh6aHmOPmWAeDE9C4OrNW9RIdmhX/YRbovQBVNGNVWojRjl3FgQZ5LPFXO6l1maKB4JhXcBFENVxVvw==}
+    engines: {node: '>=18'}
+
+  '@livekit/mutex@1.1.1':
+    resolution: {integrity: sha512-EsshAucklmpuUAfkABPxJNhzj9v2sG7JuzFDL4ML1oJQSV14sqrpTYnsaOudMAw9yOaW53NU3QQTlUQoRs4czw==}
+
+  '@livekit/protocol@1.46.6':
+    resolution: {integrity: sha512-upzlHP1vi/kZ/QqALZTFskQ0ifqc2f15RKucHYOsIHJsaXvEYanG75mAb7o+Yomfs4XhQ4BaRsdY+TFHXpaqrg==}
+
   '@livekit/protocol@1.49.0':
     resolution: {integrity: sha512-TCmihwjHBWAUdNrqvmrN/K59r7vDnPIy3OEaE3p0g4FvdcQTiLynmFC3igR25Q2fnifahhAJjnnfSCtWUK7kYg==}
 
@@ -1840,6 +1891,28 @@ packages:
     peerDependenciesMeta:
       '@nestjs/platform-socket.io':
         optional: true
+
+  '@noble/hashes@2.2.0':
+    resolution: {integrity: sha512-IYqDGiTXab6FniAgnSdZwgWbomxpy9FtYvLKs7wCUs2a8RkITG+DFGO1DM9cr+E3/RgADRpFjrKVaJ1z6sjtEg==}
+    engines: {node: '>= 20.19.0'}
+
+  '@otplib/core@13.4.1':
+    resolution: {integrity: sha512-KIXgK1hNtWJEBMTastbe1bpmuais+3f+ATeO8TkMs2rNkfGO1FbQy8+/UWVEu3TR/iTJerU0idkPudaPmLP2BA==}
+
+  '@otplib/hotp@13.4.1':
+    resolution: {integrity: sha512-g9q04SwpG5ZtMnVkUcgcoAlwCH4YLROZN1qhyBwgkBzqYYVSYhpP6gSGaxGHwePLt1c+e6NqDlgIZN+e1/XPuA==}
+
+  '@otplib/plugin-base32-scure@13.4.1':
+    resolution: {integrity: sha512-Fs/r5qisC05SRhT6xWXaypB6PVC0vgWf6zztmi0J5RnQ09OJiPDWCJFH6cDm6ANsrdvB9di7X+Jb7L13BoEbUA==}
+
+  '@otplib/plugin-crypto-noble@13.4.1':
+    resolution: {integrity: sha512-PJfVW8/1hdS6CfxLheKPZSLTwDq4TijZbN4yRjxlv0ODdzmxpM+wGwWr1JXMdy0xJPxLziydQD5gdVqrR4/gAg==}
+
+  '@otplib/totp@13.4.1':
+    resolution: {integrity: sha512-QOkBVPrf6AM4qZaReZPSk9/I8ATVdZpIISJz115MqeVtcrbcr5llPZ0J7804tpnjnp1vCRkI5Qjd47HhgVteBQ==}
+
+  '@otplib/uri@13.4.1':
+    resolution: {integrity: sha512-xaIm7bvICMhoB2rZIR5luiaMdssWR5nY5nXnR1fdezUgZuEO58D6zrGzLp7pQuBmlpmL0HagnscDQFoskp9yiA==}
 
   '@phc/format@1.0.0':
     resolution: {integrity: sha512-m7X9U6BG2+J+R1lSOdCiITLLrxm+cWlNI3HUFA92oLO77ObGNzaKdh8pMLqdZcshtkKuV84olNNXDfMc4FezBQ==}
@@ -2175,6 +2248,9 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@scure/base@2.2.0':
+    resolution: {integrity: sha512-b8XEupJibegiXV+tDUseI8oLQc8ei3d/4Jkb2RpbHh3MfE054ov3uIz2dhFkB3FI8iwYkEh0gGCApkrYggkPNg==}
+
   '@sinclair/typebox@0.27.10':
     resolution: {integrity: sha512-MTBk/3jGLNB2tVxv6uLlFh1iu64iYOQ2PbdOSK3NW8JZsmlaOh2q6sdtKowBhfw8QFLmYNzTW4/oK4uATIi6ZA==}
 
@@ -2386,6 +2462,9 @@ packages:
 
   '@types/dockerode@3.3.47':
     resolution: {integrity: sha512-ShM1mz7rCjdssXt7Xz0u1/R2BJC7piWa3SJpUBiVjCf2A3XNn4cP6pUVaD8bLanpPVVn4IKzJuw3dOvkJ8IbYw==}
+
+  '@types/dom-mediacapture-record@1.0.22':
+    resolution: {integrity: sha512-mUMZLK3NvwRLcAAT9qmcK+9p7tpU2FHdDsntR3YI4+GY88XrgG4XiE7u1Q2LAN2/FZOz/tdMDC3GQCR4T8nFuw==}
 
   '@types/eslint-scope@3.7.7':
     resolution: {integrity: sha512-MzMFlSLBqNF2gcHWO0G1vP/YQyfvrxZ0bF+u7mzUdZ1/xK4A4sru+nraZz5i3iEIk1l1uyicaDVTB4QbbEkAYg==}
@@ -3179,6 +3258,10 @@ packages:
   clone@1.0.4:
     resolution: {integrity: sha512-JQHZ2QMW6l3aH/j6xCqQThY/9OH4D/9ls34cgkUBiEeocRTU04tHfKPBsUK1PqZCUQM7GiA0IIXJSuXHI64Kbg==}
     engines: {node: '>=0.8'}
+
+  clsx@2.1.1:
+    resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
+    engines: {node: '>=6'}
 
   cluster-key-slot@1.1.1:
     resolution: {integrity: sha512-rwHwUfXL40Chm1r08yrhU3qpUvdVlgkKNeyeGPOxnW8/SyVDvgRaed/Uz54AqWNaTCAThlj6QAs3TZcKI0xDEw==}
@@ -4313,6 +4396,9 @@ packages:
   jose@5.10.0:
     resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
 
+  jose@6.2.3:
+    resolution: {integrity: sha512-YYVDInQKFJfR/xa3ojUTl8c2KoTwiL1R5Wg9YCydwH0x0B9grbzlg5HC7mMjCtUJjbQ/YnGEZIhI5tCgfTb4Hw==}
+
   joycon@3.1.1:
     resolution: {integrity: sha512-34wB/Y7MW7bzjKRjUKTa46I2Z7eV62Rkhva+KkopW7Qvv/OSWBqvkSY7vusOPrNuZcUG3tApvdVgNB8POj3SPw==}
     engines: {node: '>=10'}
@@ -4512,6 +4598,11 @@ packages:
     resolution: {integrity: sha512-LWzX2KsqcB1wqQ4AHgYb4RsDXauQiqhjLk+6hjbaeHG4zpjjVAB6wC/gz6X0l+Du1cN3pUB5ZlrvTbhGSNnUQQ==}
     engines: {node: '>=18.0.0'}
 
+  livekit-client@2.20.0:
+    resolution: {integrity: sha512-RIJcpvBmOmwz3jTj3rmdY6Dzr55HrhcaJjMgY+HSmoEM+yIRyA40m7r8UKv0hnZWM3z/AYhP1q8C8ciz5UWFKQ==}
+    peerDependencies:
+      '@types/dom-mediacapture-record': ^1
+
   livekit-server-sdk@2.16.0:
     resolution: {integrity: sha512-Myr90TWbqUujvPpo0N8JS+gtY6jVKgbIRx688cVSL3mp18IVAwhDWyRzNloQBcimHg24zz1JjERTiwOw0wuFIg==}
     engines: {node: '>=18'}
@@ -4605,6 +4696,14 @@ packages:
   log-update@6.1.0:
     resolution: {integrity: sha512-9ie8ItPR6tjY5uYJh8K/Zrv/RMZ5VOlOWvtZdEHYSTFKZfIBPQa9tOAEeAWhd+AnIneLJ22w5fjOYtoutpWq5w==}
     engines: {node: '>=18'}
+
+  loglevel@1.9.1:
+    resolution: {integrity: sha512-hP3I3kCrDIMuRwAwHltphhDM1r8i55H33GgqjXbrisuJhF4kRhW1dNuxsRklp4bXl8DSdLaNLuiL4A/LWRfxvg==}
+    engines: {node: '>= 0.6.0'}
+
+  loglevel@1.9.2:
+    resolution: {integrity: sha512-HgMmCqIJSAKqo68l0rS2AanEWfkxaZ5wNiEFb5ggm08lDs9Xl2KxBlX3PTcaD2chBM1gXAYf491/M2Rv8Jwayg==}
+    engines: {node: '>= 0.6.0'}
 
   long@5.3.2:
     resolution: {integrity: sha512-mNAgZ1GmyNhD7AuqnTG3/VQ26o760+ZYBPKjPvugO8+nLbYfX6TVpJPseBvopbdY+qpZ/lKUnmEc1LeZYS3QAA==}
@@ -5006,6 +5105,9 @@ packages:
   ora@5.4.1:
     resolution: {integrity: sha512-5b6Y85tPxZZ7QytO+BQzysW31HJku27cRIlkbAXaNx+BdcVi+LlRFmVXzeF6a7JCwJpyw5c4b+YSVImQIrBpuQ==}
     engines: {node: '>=10'}
+
+  otplib@13.4.1:
+    resolution: {integrity: sha512-o5CxfDw6bh7hoDv0NUUIcc0RqzJ9ipfUrzeKheKJ+vs4rXZnDlA9n4a/7R1cDjpmLjKLix4BgNVRmoDkm5rLSQ==}
 
   p-limit@2.3.0:
     resolution: {integrity: sha512-//88mFWSJx8lxCzwdAABTJL2MyWB12+eIY7MDL2SqLmAkeKU9qxRvWuSyTjm3FUmpBEMuFfckAIqEaVGUDxb6w==}
@@ -5562,6 +5664,13 @@ packages:
   schema-utils@4.3.3:
     resolution: {integrity: sha512-eflK8wEtyOE6+hsaRVPxvUKYCpRgzLqDTb8krvAsRIwOGlHoSgYLgBXoubGgLd2fT41/OUYdb48v4k4WWHQurA==}
     engines: {node: '>= 10.13.0'}
+
+  sdp-transform@2.15.0:
+    resolution: {integrity: sha512-KrOH82c/W+GYQ0LHqtr3caRpM3ITglq3ljGUIb8LTki7ByacJZ9z+piSGiwZDsRyhQbYBOBJgr2k6X4BZXi3Kw==}
+    hasBin: true
+
+  sdp@3.2.2:
+    resolution: {integrity: sha512-xZocWwfyp4hkbN4hLWxMjmv2Q8aNa9MhmOZ7L9aCZPT+dZsgRr6wZRrSYE3HTdyk/2pZKPSgqI7ns7Een1xMSA==}
 
   secure-json-parse@4.1.0:
     resolution: {integrity: sha512-l4KnYfEyqYJxDwlNVyRfO2E4NTHfMKAWdUuA8J0yve2Dz/E/PdBepY03RvyJpssIpRFwJoCD55wA+mEDs6ByWA==}
@@ -6129,6 +6238,9 @@ packages:
     resolution: {integrity: sha512-faYHw0anBbc/kWF3zFTEnxSFOAGUX9GFbOBthvDdLsIlEoWOFOtS0zgCiQYwIskL9iGXZL3kAXD8OoZ4GmMATA==}
     engines: {node: '>= 18'}
 
+  typed-emitter@2.1.0:
+    resolution: {integrity: sha512-g/KzbYKbH5C2vPkaXGu8DJlHrGKHLsM25Zg9WuC9pMGfuvT+X25tZQWo5fK1BjBm8+UrVE9LDCvaY0CQk+fXDA==}
+
   typedarray@0.0.6:
     resolution: {integrity: sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==}
 
@@ -6229,6 +6341,12 @@ packages:
 
   use-sync-external-store@1.6.0:
     resolution: {integrity: sha512-Pp6GSwGP/NrPIrxVFAIkOQeyw8lFenOHijQWkUTrDvrF4ALqylP2C/KCkeS9dpUM3KvYRQhna5vt7IL95+ZQ9w==}
+    peerDependencies:
+      react: 19.1.0
+
+  usehooks-ts@3.1.1:
+    resolution: {integrity: sha512-I4diPp9Cq6ieSUH2wu+fDAVQO43xwtulo+fKEidHUwZPnYImbtkTjzIJYcDcJqxgmX31GVqNFURodvcgHcW0pA==}
+    engines: {node: '>=16.15.0'}
     peerDependencies:
       react: 19.1.0
 
@@ -6378,6 +6496,10 @@ packages:
     peerDependenciesMeta:
       webpack-cli:
         optional: true
+
+  webrtc-adapter@9.0.5:
+    resolution: {integrity: sha512-U9vjByy/sK2OMXu5mmfuZFKTMIUQe34c0JXRO+oDrxJTsntdYT2iIFwYMOV7HhMTuktcZLGf2W1N/OcSf9ssWg==}
+    engines: {node: '>=6.0.0', npm: '>=3.10.0'}
 
   whatwg-encoding@3.1.1:
     resolution: {integrity: sha512-6qN4hJdMwfYBtE3YBTTHhoeuUrDBPZmbQaxWAqSALV/MeEnR5z1xd8UKud2RAkFoPkmB+hli1TZSnyi84xz1vQ==}
@@ -7875,6 +7997,17 @@ snapshots:
 
   '@fastify/busboy@2.1.1': {}
 
+  '@floating-ui/core@1.7.5':
+    dependencies:
+      '@floating-ui/utils': 0.2.11
+
+  '@floating-ui/dom@1.7.4':
+    dependencies:
+      '@floating-ui/core': 1.7.5
+      '@floating-ui/utils': 0.2.11
+
+  '@floating-ui/utils@0.2.11': {}
+
   '@grpc/grpc-js@1.14.4':
     dependencies:
       '@grpc/proto-loader': 0.8.1
@@ -8156,6 +8289,34 @@ snapshots:
 
   '@js-sdsl/ordered-map@4.4.2': {}
 
+  '@livekit/components-core@0.12.13(livekit-client@2.20.0(@types/dom-mediacapture-record@1.0.22))(tslib@2.8.1)':
+    dependencies:
+      '@floating-ui/dom': 1.7.4
+      livekit-client: 2.20.0(@types/dom-mediacapture-record@1.0.22)
+      loglevel: 1.9.1
+      rxjs: 7.8.2
+      tslib: 2.8.1
+
+  '@livekit/components-react@2.9.21(livekit-client@2.20.0(@types/dom-mediacapture-record@1.0.22))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tslib@2.8.1)':
+    dependencies:
+      '@livekit/components-core': 0.12.13(livekit-client@2.20.0(@types/dom-mediacapture-record@1.0.22))(tslib@2.8.1)
+      clsx: 2.1.1
+      events: 3.3.0
+      jose: 6.2.3
+      livekit-client: 2.20.0(@types/dom-mediacapture-record@1.0.22)
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+      tslib: 2.8.1
+      usehooks-ts: 3.1.1(react@19.1.0)
+
+  '@livekit/components-styles@1.2.0': {}
+
+  '@livekit/mutex@1.1.1': {}
+
+  '@livekit/protocol@1.46.6':
+    dependencies:
+      '@bufbuild/protobuf': 1.10.1
+
   '@livekit/protocol@1.49.0':
     dependencies:
       '@bufbuild/protobuf': 1.10.1
@@ -8294,6 +8455,35 @@ snapshots:
       tslib: 2.8.1
     optionalDependencies:
       '@nestjs/platform-socket.io': 11.1.27(@nestjs/common@11.1.27(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/websockets@11.1.27)(rxjs@7.8.2)
+
+  '@noble/hashes@2.2.0': {}
+
+  '@otplib/core@13.4.1': {}
+
+  '@otplib/hotp@13.4.1':
+    dependencies:
+      '@otplib/core': 13.4.1
+      '@otplib/uri': 13.4.1
+
+  '@otplib/plugin-base32-scure@13.4.1':
+    dependencies:
+      '@otplib/core': 13.4.1
+      '@scure/base': 2.2.0
+
+  '@otplib/plugin-crypto-noble@13.4.1':
+    dependencies:
+      '@noble/hashes': 2.2.0
+      '@otplib/core': 13.4.1
+
+  '@otplib/totp@13.4.1':
+    dependencies:
+      '@otplib/core': 13.4.1
+      '@otplib/hotp': 13.4.1
+      '@otplib/uri': 13.4.1
+
+  '@otplib/uri@13.4.1':
+    dependencies:
+      '@otplib/core': 13.4.1
 
   '@phc/format@1.0.0': {}
 
@@ -8648,6 +8838,8 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.62.2':
     optional: true
 
+  '@scure/base@2.2.0': {}
+
   '@sinclair/typebox@0.27.10': {}
 
   '@sinonjs/commons@3.0.1':
@@ -8845,6 +9037,8 @@ snapshots:
       '@types/docker-modem': 3.0.6
       '@types/node': 22.20.0
       '@types/ssh2': 1.15.5
+
+  '@types/dom-mediacapture-record@1.0.22': {}
 
   '@types/eslint-scope@3.7.7':
     dependencies:
@@ -9785,6 +9979,8 @@ snapshots:
       wrap-ansi: 7.0.0
 
   clone@1.0.4: {}
+
+  clsx@2.1.1: {}
 
   cluster-key-slot@1.1.1: {}
 
@@ -11013,6 +11209,8 @@ snapshots:
 
   jose@5.10.0: {}
 
+  jose@6.2.3: {}
+
   joycon@3.1.1: {}
 
   js-levenshtein@1.1.6: {}
@@ -11214,6 +11412,19 @@ snapshots:
       rfdc: 1.4.1
       wrap-ansi: 9.0.2
 
+  livekit-client@2.20.0(@types/dom-mediacapture-record@1.0.22):
+    dependencies:
+      '@livekit/mutex': 1.1.1
+      '@livekit/protocol': 1.46.6
+      '@types/dom-mediacapture-record': 1.0.22
+      events: 3.3.0
+      jose: 6.2.3
+      loglevel: 1.9.2
+      sdp-transform: 2.15.0
+      tslib: 2.8.1
+      typed-emitter: 2.1.0
+      webrtc-adapter: 9.0.5
+
   livekit-server-sdk@2.16.0:
     dependencies:
       '@bufbuild/protobuf': 1.10.1
@@ -11291,6 +11502,10 @@ snapshots:
       slice-ansi: 7.1.2
       strip-ansi: 7.2.0
       wrap-ansi: 9.0.2
+
+  loglevel@1.9.1: {}
+
+  loglevel@1.9.2: {}
 
   long@5.3.2: {}
 
@@ -11767,6 +11982,15 @@ snapshots:
       log-symbols: 4.1.0
       strip-ansi: 6.0.1
       wcwidth: 1.0.1
+
+  otplib@13.4.1:
+    dependencies:
+      '@otplib/core': 13.4.1
+      '@otplib/hotp': 13.4.1
+      '@otplib/plugin-base32-scure': 13.4.1
+      '@otplib/plugin-crypto-noble': 13.4.1
+      '@otplib/totp': 13.4.1
+      '@otplib/uri': 13.4.1
 
   p-limit@2.3.0:
     dependencies:
@@ -12388,6 +12612,10 @@ snapshots:
       ajv-formats: 2.1.1(ajv@8.20.0)
       ajv-keywords: 5.1.0(ajv@8.20.0)
 
+  sdp-transform@2.15.0: {}
+
+  sdp@3.2.2: {}
+
   secure-json-parse@4.1.0: {}
 
   semver@6.3.1: {}
@@ -13005,6 +13233,10 @@ snapshots:
       media-typer: 1.1.0
       mime-types: 3.0.2
 
+  typed-emitter@2.1.0:
+    optionalDependencies:
+      rxjs: 7.8.2
+
   typedarray@0.0.6: {}
 
   typescript-eslint@8.62.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3):
@@ -13091,6 +13323,11 @@ snapshots:
 
   use-sync-external-store@1.6.0(react@19.1.0):
     dependencies:
+      react: 19.1.0
+
+  usehooks-ts@3.1.1(react@19.1.0):
+    dependencies:
+      lodash.debounce: 4.0.8
       react: 19.1.0
 
   util-deprecate@1.0.2: {}
@@ -13253,6 +13490,10 @@ snapshots:
       - lightningcss
       - postcss
       - uglify-js
+
+  webrtc-adapter@9.0.5:
+    dependencies:
+      sdp: 3.2.2
 
   whatwg-encoding@3.1.1:
     dependencies:

@@ -1,5 +1,5 @@
 import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
-import { AccessToken, RoomServiceClient } from 'livekit-server-sdk';
+import { AccessToken, RoomServiceClient, TrackSource } from 'livekit-server-sdk';
 
 import { env } from '../config/env';
 
@@ -39,6 +39,18 @@ export class LivekitService {
       canPublish: publisher,
       canPublishData: publisher,
       roomAdmin: publisher,
+      // creators broadcast ANY combination of sources: camera, mic, screen
+      // share (with its audio) — not just the camera (owner requirement)
+      ...(publisher
+        ? {
+            canPublishSources: [
+              TrackSource.CAMERA,
+              TrackSource.MICROPHONE,
+              TrackSource.SCREEN_SHARE,
+              TrackSource.SCREEN_SHARE_AUDIO,
+            ],
+          }
+        : {}),
     });
     return { token: await token.toJwt(), url: env.LIVEKIT_URL };
   }

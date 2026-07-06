@@ -36,7 +36,19 @@ async function main() {
     },
     update: {},
   });
-  console.log(`seeded ${GIFTS.length} gifts + system staff user`);
+  // dev admin login (change the password before anything public)
+  const argon2 = require('argon2');
+  await prisma.staffUser.upsert({
+    where: { email: 'admin@grid.local' },
+    create: {
+      email: 'admin@grid.local',
+      name: 'Admin',
+      role: 'SUPERADMIN',
+      passwordHash: await argon2.hash('admin12345!'),
+    },
+    update: {},
+  });
+  console.log(`seeded ${GIFTS.length} gifts + system/admin staff users`);
   await prisma.$disconnect();
 }
 

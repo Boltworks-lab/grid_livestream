@@ -13,6 +13,7 @@ import { useAuth } from '../auth/AuthContext';
 import { api } from '../lib/api';
 import { connectRealtime, emitWithAck } from '../lib/realtime';
 import { GiftBar } from './GiftBar';
+import { LiveStage } from './LiveStage';
 
 interface FloatingGift {
   key: string;
@@ -38,6 +39,7 @@ export function LiveRoomScreen() {
   const [videoState, setVideoState] = useState<'checking' | 'unconfigured' | 'ready' | 'blocked'>(
     'checking',
   );
+  const [media, setMedia] = useState<{ token: string; url: string } | null>(null);
   const [floats, setFloats] = useState<FloatingGift[]>([]);
   const [unlockState, setUnlockState] = useState<'idle' | 'busy' | 'insufficient' | 'failed'>(
     'idle',
@@ -66,11 +68,15 @@ export function LiveRoomScreen() {
   // media token: proves the §3.4 gate; LiveKit playback mounts here once keys exist
   useEffect(() => {
     if (!id || !stream?.entitled || stream.status !== 'LIVE') return;
-    void api.POST('/streams/{id}/token', { params: { path: { id } } }).then(({ response }) => {
-      if (response.status === 503) setVideoState('unconfigured');
-      else if (response.ok) setVideoState('ready');
-      else setVideoState('blocked');
-    });
+    void api
+      .POST('/streams/{id}/token', { params: { path: { id } } })
+      .then(({ data, response }) => {
+        if (response.status === 503) setVideoState('unconfigured');
+        else if (response.ok && data) {
+          setMedia(data as { token: string; url: string });
+          setVideoState('ready');
+        } else setVideoState('blocked');
+      });
   }, [id, stream?.entitled, stream?.status]);
 
   useEffect(() => {
@@ -264,11 +270,8 @@ export function LiveRoomScreen() {
                 (docs/deferred.md).
               </span>
             </div>
-          ) : videoState === 'ready' ? (
-            <div className="video-note">
-              <b>{stream.title}</b>
-              <span className="muted">LiveKit token minted — player mounts here next.</span>
-            </div>
+          ) : videoState === 'ready' && media ? (
+            <LiveStage token={media.token} url={media.url} isCreator={isCreator} />
           ) : (
             <div className="video-note muted">connecting…</div>
           )}

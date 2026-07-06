@@ -5,6 +5,7 @@ import { LoggerModule } from 'nestjs-pino';
 
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { AdminModule } from './admin/admin.module';
 import { ChatModule } from './chat/chat.module';
 import { env } from './config/env';
 import { EconomicsModule } from './economics/economics.module';
@@ -15,6 +16,7 @@ import { HealthController } from './health/health.controller';
 import { PaymentsModule } from './payments/payments.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
+import { ReportsController } from './reports/reports.controller';
 import { StreamsModule } from './streams/streams.module';
 import { UsersModule } from './users/users.module';
 import { WalletModule } from './wallet/wallet.module';
@@ -45,8 +47,9 @@ import { WalletModule } from './wallet/wallet.module';
     GiftsModule,
     GatesModule,
     PayoutsModule,
+    AdminModule,
   ],
-  controllers: [HealthController],
+  controllers: [HealthController, ReportsController],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },

@@ -13,6 +13,24 @@ of every phase; delete entries when done. (CLAUDE.md points here.)
 | Sentry, all apps (Phase 2)                                            | DSN(s) from sentry.io                            | `SENTRY_DSN`                                                                                 |
 | Zendesk + Metabase sign-off                                           | Owner vendor/cost approval                       | ADR 0003 records the recommendation                                                          |
 
+## Phase 8 deferrals
+
+- **Dashboards** — embed Metabase (ADR 0003) once the owner approves the vendor; the
+  admin app reserves no UI for it yet.
+- **IAM completeness** — staff CRUD, role-based permission matrix (only SUPERADMIN
+  exists meaningfully), forced logout/session list. Roles are IN the token; per-role
+  authorization checks land with staff CRUD.
+- **Automated moderation (§8)** — chat keyword/ML filter, stream frame sampling,
+  upload scanning; the human queue works, automation feeds it later.
+- **Content/config management** — gift catalog CRUD, banners, featured, categories
+  (admin edits economics only so far).
+- **Marketing tools** (§6.6) — campaigns, promo codes, referrals.
+- **Admin endpoints in the OpenAPI spec** — the admin app uses a small typed fetch
+  for /admin/*; fold into the generated client with the contract-drift CI gate.
+- **Deployment**: admin behind SSO/IP-allowlist (brief §12) when deployed.
+- **Dev admin credential**: seeded `admin@grid.local` / `admin12345!` — change before
+  anything is public.
+
 ## Phase 7 deferrals
 
 - **Enable Stripe Connect** (owner, one click): Stripe dashboard → Connect → get

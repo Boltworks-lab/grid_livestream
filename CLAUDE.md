@@ -56,6 +56,17 @@ Read PROJECT_BRIEF.md first; it is the authoritative spec. This file is the quic
   Stripe transfer with automatic coin REFUND + audit_log on failure. Ledger fix:
   idempotency lookup now precedes the balance check (replays after balance drops
   return the original tx — regression-tested).
+- **Phase 8 core done** (verified 14/14): staff auth = separate JWT secret + typ
+  claim, TOTP 2FA mandatory (enroll-on-first-login via signed enroll token), user
+  tokens rejected on /admin. Admin app: payout queue (approve/reject with refund),
+  report queue (BAN/SUSPEND revokes sessions; REMOVE_CONTENT hides chat), user
+  lookup (money read-only), economics editor, audit viewer. Every mutation lands
+  in append-only audit_log. Dev login: admin@grid.local / admin12345! (CHANGE IT).
+  POST /reports lets users file reports.
+- **Multi-source streaming**: creator tokens grant camera+mic+screen(+audio)
+  sources (ADR 0004); web live room mounts a LiveKit stage with per-source
+  toggles for creators and screen-share-first layout for viewers — activates
+  with the owner's LiveKit keys.
 - **docs/deferred.md is the skip ledger** — every intentionally skipped item lives
   there. Add to it when skipping; review it at each phase boundary.
 - Remote: `github.com/Boltworks-lab/grid_livestream` (repo-scoped credential —
