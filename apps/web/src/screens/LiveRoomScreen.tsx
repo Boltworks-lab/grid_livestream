@@ -229,7 +229,31 @@ export function LiveRoomScreen() {
             </>
           )}
           {stream.access === 'SUBS' && (
-            <p className="gate-price">Subscribers only — subscriptions launch soon</p>
+            <>
+              <p className="gate-price">Subscribers only</p>
+              <button
+                type="button"
+                className="primary"
+                disabled={unlockState === 'busy'}
+                onClick={() => {
+                  setUnlockState('busy');
+                  void api
+                    .POST('/subscriptions/{creatorId}/checkout', {
+                      params: { path: { creatorId: stream.creatorId } },
+                    })
+                    .then(({ data, response }) => {
+                      if (data?.checkoutUrl) window.location.href = data.checkoutUrl;
+                      else setUnlockState(response.status === 400 ? 'failed' : 'failed');
+                    });
+                }}
+              >
+                {unlockState === 'busy' ? '…' : 'Subscribe monthly'}
+              </button>
+              {unlockState === 'failed' && (
+                <p className="error small">This creator hasn’t enabled subscriptions yet.</p>
+              )}
+              <p className="muted small">Recurring monthly; cancel any time from your profile.</p>
+            </>
           )}
           {stream.visibility === 'FOLLOWERS' && <p className="gate-price">Followers only</p>}
           <Link className="primary-link" to="/">

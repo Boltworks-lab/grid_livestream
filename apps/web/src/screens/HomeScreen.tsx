@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { useAuth } from '../auth/AuthContext';
 import { api } from '../lib/api';
+import { CreatorSettingsPanel } from './CreatorSettingsPanel';
 import { PayoutPanel } from './PayoutPanel';
 import { WalletPanel } from './WalletPanel';
 
@@ -55,6 +56,8 @@ export function HomeScreen() {
       </section>
 
       <WalletPanel />
+
+      <CreatorSettingsPanel />
 
       <PayoutPanel />
 

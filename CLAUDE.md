@@ -63,10 +63,18 @@ Read PROJECT_BRIEF.md first; it is the authoritative spec. This file is the quic
   lookup (money read-only), economics editor, audit viewer. Every mutation lands
   in append-only audit_log. Dev login: admin@grid.local / admin12345! (CHANGE IT).
   POST /reports lets users file reports.
-- **Multi-source streaming**: creator tokens grant camera+mic+screen(+audio)
-  sources (ADR 0004); web live room mounts a LiveKit stage with per-source
-  toggles for creators and screen-share-first layout for viewers — activates
-  with the owner's LiveKit keys.
+- **Multi-source streaming (LIVE)**: LiveKit keys configured; `/streams/{id}/token`
+  mints real tokens; web live room mounts the LiveStage with per-source toggles
+  (camera+mic+screen(+audio), ADR 0004) for creators and screen-share-first layout
+  for viewers. Mobile video waits on an EAS dev-client build (deferred.md).
+- **Web subscriptions (LIVE, ADR 0005)**: creators set their own monthly price
+  (`subPriceCents`); viewers subscribe via Stripe Billing; `invoice.paid` credits
+  the creator 70% in coins at the 1¢ peg (SUB ledger tx, idempotent per invoice);
+  SUBS entitlement opens for active subscribers. Verified 11/11 + reconcile. Coin
+  peg confirmed by owner: **1 coin = 1¢**. Mobile subs need RevenueCat.
+- **Provider keys configured** in apps/api/.env: LiveKit (live), Stripe (secret +
+  webhook), RevenueCat (test SDK key only — mobile IAP needs store products +
+  webhook secret, deferred.md).
 - **Staff roles & permissions (ADR 0006)**: permission matrix in
   apps/api/src/admin/permissions.ts; endpoints declare @RequirePermission, AdminGuard
   enforces per-role. Roles: SUPERADMIN/ADMIN/MODERATOR/TECH_SUPPORT/BILLING_SUPPORT/

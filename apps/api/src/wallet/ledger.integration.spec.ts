@@ -180,7 +180,8 @@ describe('LedgerService invariants (real Postgres)', () => {
   });
 
   it('credits a stripe checkout session exactly once across webhook retries', async () => {
-    const payments = new PaymentsService(ledger);
+    // top-up path doesn't touch subscriptions; stub it
+    const payments = new PaymentsService(ledger, {} as never);
     const userId = randomUUID();
     const sessionId = `cs_test_${randomUUID().replaceAll('-', '')}`;
     const event = {

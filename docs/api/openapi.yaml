@@ -516,11 +516,67 @@ paths:
         '200': { description: Processed or already processed }
 
   # ── stubs: designed in later phases ────────────────────────────────────────
-  /subscriptions:
-    {
-      post:
-        { tags: [subscriptions], summary: 'Phase 6', responses: { '501': { description: stub } } },
-    }
+  # ── subscriptions (Phase 6, ADR 0005) ───────────────────────────────────────
+  /subscriptions/price:
+    put:
+      tags: [subscriptions]
+      summary: Creator sets/clears their own monthly subscription price
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [priceCents]
+              properties:
+                priceCents: { type: [integer, 'null'], minimum: 100 }
+      responses:
+        '200': { description: Updated }
+  /subscriptions/{creatorId}/status:
+    get:
+      tags: [subscriptions]
+      summary: Caller's subscription status to a creator
+      parameters:
+        [{ name: creatorId, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [creatorId, active, renewsAt, priceCents]
+                properties:
+                  creatorId: { type: string, format: uuid }
+                  active: { type: boolean }
+                  renewsAt: { type: [string, 'null'], format: date-time }
+                  priceCents: { type: [integer, 'null'] }
+  /subscriptions/{creatorId}/checkout:
+    post:
+      tags: [subscriptions]
+      summary: Subscribe to a creator (Stripe Billing checkout)
+      parameters:
+        [{ name: creatorId, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '201':
+          description: Checkout session
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [checkoutUrl]
+                properties:
+                  checkoutUrl: { type: string }
+        '400': { $ref: '#/components/responses/Error' }
+  /subscriptions/{creatorId}:
+    delete:
+      tags: [subscriptions]
+      summary: Cancel at period end
+      parameters:
+        [{ name: creatorId, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '200': { description: Canceled at period end }
+
   # ── payouts (Phase 7) ──────────────────────────────────────────────────────
   /payouts/connect/onboard:
     post:

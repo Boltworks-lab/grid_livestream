@@ -60,26 +60,35 @@ of every phase; delete entries when done. (CLAUDE.md points here.)
 
 ## Phase 6 deferrals
 
-- **Subscriptions (owner decision needed first)**: Stripe Billing on web is unblocked
-  (test keys exist), but crediting the creator requires pegging fiat to coins. Proposal:
-  **1 coin = $0.01** (consistent with diamond packages ≈ 1¢/diamond), so a $4.99/mo sub
-  credits the creator 70% = 349 coins per period via a SUB ledger tx on `invoice.paid`.
-  Owner should confirm the peg + monthly price before this ships. Mobile subs need
-  RevenueCat (already owner-blocked).
-- **SUBS-gated streams**: the entitlement branch exists and is enforced; until
-  subscriptions ship, SUBS streams are only enterable via creator INVITE grants.
+- **DONE — web subscriptions** (2026-07-06): creators set their own monthly price;
+  viewers subscribe via Stripe Billing; `invoice.paid` credits the creator 70% in coins
+  at the 1¢ peg (SUB ledger tx, idempotent per invoice); SUBS entitlement opens for
+  active subscribers. Verified live end-to-end.
+- **Mobile subscriptions** still need RevenueCat (owner has a _test_ SDK key; also needs
+  App Store/Play products + a RevenueCat webhook auth secret — see RevenueCat below).
 - **Unlock for scheduled (not-yet-live) streams** — unlock currently requires the
   stream to not be ENDED; pre-purchase of scheduled streams is a product call.
 
+## RevenueCat (mobile IAP) — partially configured
+
+Owner supplied a **test SDK key** (`REVENUECAT_API_KEY` in .env). Still needed before
+mobile diamond purchases / subscriptions work end-to-end:
+
+- Platform SDK keys (`appl_…` iOS, `goog_…` Android) wired into the mobile app.
+- Products/entitlements configured in RevenueCat + App Store Connect / Google Play
+  (requires paid developer accounts + app listings).
+- A RevenueCat **webhook auth secret** so `/payments/webhooks/revenuecat` can credit
+  diamonds exactly once (mirror of the Stripe webhook path — endpoint not built yet).
+
 ## Phase 4 deferrals
 
-- **LiveKit Cloud keys** (owner-blocked): create a project at cloud.livekit.io (free
-  tier) → `LIVEKIT_URL` / `LIVEKIT_API_KEY` / `LIVEKIT_API_SECRET` in apps/api/.env.
-  Until then `/streams/{id}/token` 503s; unlocks: video publish/subscribe, the
-  `room_finished` webhook (auto-end streams), `RemoveParticipant` revocation.
-- **LiveKit player mount, web + mobile** — both live rooms mint tokens and reserve
-  the video surface; mount `@livekit/components-react` (web) and
-  `@livekit/react-native` (mobile — needs a dev build, not Expo Go) once keys exist.
+- **DONE — LiveKit keys configured** (2026-07-06): `/streams/{id}/token` mints real
+  tokens; the web live room mounts the multi-source LiveStage (camera/mic/screen for
+  creators, subscribe-first grid for viewers). Still to wire: the `room_finished`
+  webhook (auto-end streams on empty) and `RemoveParticipant` on ban/refund.
+- **LiveKit player — web DONE** (LiveStage mounts @livekit/components-react). **Mobile
+  pending**: `@livekit/react-native` needs a custom dev build (not Expo Go), so mobile
+  video publish/subscribe waits on an EAS dev-client build.
 - **Mobile like/share rail buttons** — prototype's action rail shipped with
   chevrons/gift/end; like + share are cosmetic placeholders to add.
 - **Playwright e2e for the web flows** (signup → go live → chat → gift) — brief §10.

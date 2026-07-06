@@ -79,6 +79,8 @@ model CreatorProfile {
   level           Int       @default(1)
   followerCount   Int       @default(0) // denormalized; source of truth is follows
   stripeConnectId String?   @unique
+  stripeCustomerId String?  @unique // for paying subscriptions to OTHER creators
+  subPriceCents   Int? // creator-set monthly subscription price (null = subs off)
   kycStatus       KycStatus @default(NONE)
   payoutHoldUntil DateTime? // new-creator payout hold (brief §7)
   createdAt       DateTime  @default(now())

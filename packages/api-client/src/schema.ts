@@ -1223,7 +1223,92 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/subscriptions': {
+  '/subscriptions/price': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /** Creator sets/clears their own monthly subscription price */
+    put: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': {
+            priceCents: number | null;
+          };
+        };
+      };
+      responses: {
+        /** @description Updated */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content?: never;
+        };
+      };
+    };
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/subscriptions/{creatorId}/status': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Caller's subscription status to a creator */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          creatorId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              /** Format: uuid */
+              creatorId: string;
+              active: boolean;
+              /** Format: date-time */
+              renewsAt: string | null;
+              priceCents: number | null;
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/subscriptions/{creatorId}/checkout': {
     parameters: {
       query?: never;
       header?: never;
@@ -1232,18 +1317,62 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Phase 6 */
+    /** Subscribe to a creator (Stripe Billing checkout) */
     post: {
       parameters: {
         query?: never;
         header?: never;
-        path?: never;
+        path: {
+          creatorId: string;
+        };
         cookie?: never;
       };
       requestBody?: never;
       responses: {
-        /** @description stub */
-        501: {
+        /** @description Checkout session */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              checkoutUrl: string;
+            };
+          };
+        };
+        400: components['responses']['Error'];
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/subscriptions/{creatorId}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Cancel at period end */
+    delete: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path: {
+          creatorId: string;
+        };
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description Canceled at period end */
+        200: {
           headers: {
             [name: string]: unknown;
           };
@@ -1251,7 +1380,6 @@ export interface paths {
         };
       };
     };
-    delete?: never;
     options?: never;
     head?: never;
     patch?: never;

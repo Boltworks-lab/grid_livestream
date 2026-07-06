@@ -19,6 +19,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
 import { ReportsController } from './reports/reports.controller';
 import { StreamsModule } from './streams/streams.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { UsersModule } from './users/users.module';
 import { WalletModule } from './wallet/wallet.module';
 
@@ -48,6 +49,7 @@ import { WalletModule } from './wallet/wallet.module';
     ChatModule,
     GiftsModule,
     GatesModule,
+    SubscriptionsModule,
     PayoutsModule,
     AdminModule,
   ],

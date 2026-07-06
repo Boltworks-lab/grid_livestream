@@ -4,6 +4,7 @@ export * from './auth';
 export * from './economics';
 export * from './gifts';
 export * from './streams';
+export * from './subscriptions';
 export * from './wallet';
 export * from './ws-events';
 

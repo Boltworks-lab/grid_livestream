@@ -2,30 +2,42 @@ import { DIAMOND_PACKAGES } from '@grid/shared';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import type Stripe from 'stripe';
 
+import { SubscriptionsService } from '../subscriptions/subscriptions.service';
 import { LedgerService } from '../wallet/ledger.service';
 
 /**
  * Webhooks are the ONLY path that credits money (PROJECT_BRIEF §3.3): verified
- * signature upstream, exactly-once crediting here via the ledger idempotency
- * key derived from the Checkout session id — Stripe retries and duplicate
- * events collapse into a single TOPUP transaction.
+ * signature upstream, exactly-once crediting here via ledger idempotency keys
+ * derived from the Stripe object id — Stripe retries and duplicate events
+ * collapse into a single ledger transaction.
  */
 @Injectable()
 export class PaymentsService {
   private readonly logger = new Logger(PaymentsService.name);
 
-  constructor(private readonly ledger: LedgerService) {}
+  constructor(
+    private readonly ledger: LedgerService,
+    private readonly subscriptions: SubscriptionsService,
+  ) {}
 
   async handleStripeEvent(event: Stripe.Event): Promise<void> {
-    if (event.type !== 'checkout.session.completed') {
-      this.logger.debug(`ignoring stripe event ${event.type}`);
-      return;
+    switch (event.type) {
+      case 'checkout.session.completed':
+        return this.handleCheckoutCompleted(event.data.object);
+      case 'invoice.paid':
+        return this.subscriptions.handleInvoicePaid(event.data.object);
+      case 'customer.subscription.deleted':
+        return this.subscriptions.handleSubscriptionCanceled(event.data.object);
+      default:
+        this.logger.debug(`ignoring stripe event ${event.type}`);
     }
-    const session = event.data.object;
+  }
+
+  private async handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
+    // subscription checkouts are credited per-invoice (invoice.paid), not here
+    if (session.mode === 'subscription') return;
     if (session.payment_status !== 'paid') {
-      this.logger.warn(
-        `checkout ${session.id} completed but payment_status=${session.payment_status}`,
-      );
+      this.logger.warn(`checkout ${session.id} payment_status=${session.payment_status}`);
       return;
     }
 
@@ -47,7 +59,6 @@ export class PaymentsService {
       idempotencyKey: `stripe_session:${session.id}`,
       metadata: {
         provider: 'stripe',
-        eventId: event.id,
         sessionId: session.id,
         packageId: pack.id,
         usdCents: pack.usdCents,

@@ -899,3 +899,9 @@ select {
   color: var(--t3);
   font-size: 11px;
 }
+
+/* ── subscription price input ── */
+.prefix {
+  color: var(--t2);
+  font-weight: 600;
+}
