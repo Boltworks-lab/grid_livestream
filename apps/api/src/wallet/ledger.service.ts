@@ -76,6 +76,13 @@ export class LedgerService {
   }
 
   async post(input: PostTransactionInput): Promise<LedgerTransaction> {
+    // idempotency FIRST: a replay must return the original transaction even if
+    // the balance has since changed (the original debit already consumed it)
+    const replay = await this.prisma.ledgerTransaction.findUnique({
+      where: { idempotencyKey: input.idempotencyKey },
+    });
+    if (replay) return replay;
+
     if (input.entries.length < 2) {
       throw new BadRequestException('a transaction needs at least two entries');
     }

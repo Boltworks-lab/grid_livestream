@@ -46,6 +46,16 @@ Read PROJECT_BRIEF.md first; it is the authoritative spec. This file is the quic
     once across devices); unlock buttons on web + mobile gates; private-stream INVITE
     endpoint. Chat gateway auth moved to socket middleware (fixes a connect race).
     Subscriptions deferred pending owner sign-off on the coin peg (docs/deferred.md).
+- **Economics are runtime-adjustable (ADR 0005)**: creator-set prices; platform
+  revshare %, coin peg, payout minimum/hold all live in app_config `economics`,
+  read via EconomicsService (30 s cache, loud default fallback). Change via
+  `pnpm --filter @grid/api set-economics -- '<json>'` until the admin app.
+- **Phase 7 core done** (verified 7/7 + refund path): Connect Express onboarding
+  (503 until owner enables Connect), payout request = PAYOUT ledger tx into a
+  clearing account (client idempotency key), min/hold checks, approve script →
+  Stripe transfer with automatic coin REFUND + audit_log on failure. Ledger fix:
+  idempotency lookup now precedes the balance check (replays after balance drops
+  return the original tx — regression-tested).
 - **docs/deferred.md is the skip ledger** — every intentionally skipped item lives
   there. Add to it when skipping; review it at each phase boundary.
 - Remote: `github.com/Boltworks-lab/grid_livestream` (repo-scoped credential —

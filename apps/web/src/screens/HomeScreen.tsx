@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { useAuth } from '../auth/AuthContext';
 import { api } from '../lib/api';
+import { PayoutPanel } from './PayoutPanel';
 import { WalletPanel } from './WalletPanel';
 
 export function HomeScreen() {
@@ -54,6 +55,8 @@ export function HomeScreen() {
       </section>
 
       <WalletPanel />
+
+      <PayoutPanel />
 
       <section className="panel">
         <h3>Profile</h3>

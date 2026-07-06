@@ -462,8 +462,76 @@ paths:
       post:
         { tags: [subscriptions], summary: 'Phase 6', responses: { '501': { description: stub } } },
     }
+  # ── payouts (Phase 7) ──────────────────────────────────────────────────────
+  /payouts/connect/onboard:
+    post:
+      tags: [payouts]
+      summary: Start/resume Stripe Connect Express onboarding
+      responses:
+        '201':
+          description: Hosted onboarding link
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [url]
+                properties:
+                  url: { type: string }
+        '503': { $ref: '#/components/responses/Error' }
+  /payouts/connect/status:
+    get:
+      tags: [payouts]
+      summary: Connect/KYC status + payout parameters for the caller
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  [connected, payoutsEnabled, kycStatus, holdUntil, minPayoutCoins, coinValueCents]
+                properties:
+                  connected: { type: boolean }
+                  payoutsEnabled: { type: boolean }
+                  kycStatus: { type: string, enum: [NONE, PENDING, VERIFIED, REJECTED] }
+                  holdUntil: { type: [string, 'null'], format: date-time }
+                  minPayoutCoins: { type: integer }
+                  coinValueCents: { type: integer }
   /payouts:
-    { post: { tags: [payouts], summary: 'Phase 7', responses: { '501': { description: stub } } } }
+    post:
+      tags: [payouts]
+      summary: Request a payout (debits coins into clearing; approval triggers the transfer)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [coinAmount, idempotencyKey]
+              properties:
+                coinAmount: { type: integer, minimum: 1 }
+                idempotencyKey: { type: string, format: uuid }
+      responses:
+        '201':
+          description: Payout requested
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PayoutItem' }
+        '400': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '422': { description: Insufficient coins }
+    get:
+      tags: [payouts]
+      summary: My payout history
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/PayoutItem' }
   /reports:
     {
       post: { tags: [moderation], summary: 'Phase 8', responses: { '501': { description: stub } } },
@@ -592,6 +660,17 @@ components:
         kind: { type: string, enum: [TOPUP, GIFT, PPV_UNLOCK, SUB, PAYOUT, REFUND, ADJUSTMENT] }
         amount: { type: integer, description: signed from the caller's perspective }
         currency: { type: string, enum: [DIAMOND, COIN] }
+        createdAt: { type: string, format: date-time }
+    PayoutItem:
+      type: object
+      required: [id, coinAmount, fiatAmountCents, fiatCurrency, status, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        coinAmount: { type: integer }
+        fiatAmountCents: { type: integer }
+        fiatCurrency: { type: string }
+        status: { type: string, enum: [REQUESTED, APPROVED, PROCESSING, PAID, FAILED, CANCELED] }
+        failureReason: { type: [string, 'null'] }
         createdAt: { type: string, format: date-time }
     DiamondPackage:
       type: object

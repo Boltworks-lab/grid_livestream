@@ -7,7 +7,9 @@ import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { ChatModule } from './chat/chat.module';
 import { env } from './config/env';
+import { EconomicsModule } from './economics/economics.module';
 import { GatesModule } from './gates/gates.module';
+import { PayoutsModule } from './payouts/payouts.module';
 import { GiftsModule } from './gifts/gifts.module';
 import { HealthController } from './health/health.controller';
 import { PaymentsModule } from './payments/payments.module';
@@ -33,6 +35,7 @@ import { WalletModule } from './wallet/wallet.module';
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     PrismaModule,
     RedisModule,
+    EconomicsModule,
     AuthModule,
     UsersModule,
     WalletModule,
@@ -41,6 +44,7 @@ import { WalletModule } from './wallet/wallet.module';
     ChatModule,
     GiftsModule,
     GatesModule,
+    PayoutsModule,
   ],
   controllers: [HealthController],
   providers: [

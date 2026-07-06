@@ -1130,7 +1130,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  '/payouts': {
+  '/payouts/connect/onboard': {
     parameters: {
       query?: never;
       header?: never;
@@ -1139,7 +1139,7 @@ export interface paths {
     };
     get?: never;
     put?: never;
-    /** Phase 7 */
+    /** Start/resume Stripe Connect Express onboarding */
     post: {
       parameters: {
         query?: never;
@@ -1149,8 +1149,131 @@ export interface paths {
       };
       requestBody?: never;
       responses: {
-        /** @description stub */
-        501: {
+        /** @description Hosted onboarding link */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              url: string;
+            };
+          };
+        };
+        503: components['responses']['Error'];
+      };
+    };
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/payouts/connect/status': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Connect/KYC status + payout parameters for the caller */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': {
+              connected: boolean;
+              payoutsEnabled: boolean;
+              /** @enum {string} */
+              kycStatus: 'NONE' | 'PENDING' | 'VERIFIED' | 'REJECTED';
+              /** Format: date-time */
+              holdUntil: string | null;
+              minPayoutCoins: number;
+              coinValueCents: number;
+            };
+          };
+        };
+      };
+    };
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/payouts': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** My payout history */
+    get: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody?: never;
+      responses: {
+        /** @description OK */
+        200: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['PayoutItem'][];
+          };
+        };
+      };
+    };
+    put?: never;
+    /** Request a payout (debits coins into clearing; approval triggers the transfer) */
+    post: {
+      parameters: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+      };
+      requestBody: {
+        content: {
+          'application/json': {
+            coinAmount: number;
+            /** Format: uuid */
+            idempotencyKey: string;
+          };
+        };
+      };
+      responses: {
+        /** @description Payout requested */
+        201: {
+          headers: {
+            [name: string]: unknown;
+          };
+          content: {
+            'application/json': components['schemas']['PayoutItem'];
+          };
+        };
+        400: components['responses']['Error'];
+        403: components['responses']['Error'];
+        /** @description Insufficient coins */
+        422: {
           headers: {
             [name: string]: unknown;
           };
@@ -1315,6 +1438,18 @@ export interface components {
       amount?: number;
       /** @enum {string} */
       currency?: 'DIAMOND' | 'COIN';
+      /** Format: date-time */
+      createdAt: string;
+    };
+    PayoutItem: {
+      /** Format: uuid */
+      id: string;
+      coinAmount: number;
+      fiatAmountCents: number;
+      fiatCurrency: string;
+      /** @enum {string} */
+      status: 'REQUESTED' | 'APPROVED' | 'PROCESSING' | 'PAID' | 'FAILED' | 'CANCELED';
+      failureReason?: string | null;
       /** Format: date-time */
       createdAt: string;
     };

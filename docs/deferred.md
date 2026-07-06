@@ -13,6 +13,17 @@ of every phase; delete entries when done. (CLAUDE.md points here.)
 | Sentry, all apps (Phase 2)                                            | DSN(s) from sentry.io                            | `SENTRY_DSN`                                                                                 |
 | Zendesk + Metabase sign-off                                           | Owner vendor/cost approval                       | ADR 0003 records the recommendation                                                          |
 
+## Phase 7 deferrals
+
+- **Enable Stripe Connect** (owner, one click): Stripe dashboard → Connect → get
+  started (test mode). Until then `POST /payouts/connect/onboard` returns a clear 503;
+  the moment it's enabled, Express onboarding, live KYC status, and real test-mode
+  transfers all work with zero code changes.
+- **Admin payout approval queue** — Phase 8; until then
+  `pnpm --filter @grid/api approve-payout -- <id>` approves as the seeded system
+  staff user and writes audit_log.
+- **Payout receipts / notifications** — Phase 9 (email provider still owner-blocked).
+
 ## Phase 6 deferrals
 
 - **Subscriptions (owner decision needed first)**: Stripe Billing on web is unblocked

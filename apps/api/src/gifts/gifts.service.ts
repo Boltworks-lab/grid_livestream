@@ -1,8 +1,9 @@
-import { computeGiftSplit, type GiftCatalogItem, type SendGiftInput } from '@grid/shared';
+import { computeSplit, type GiftCatalogItem, type SendGiftInput } from '@grid/shared';
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import Redis from 'ioredis';
 
 import { ChatService } from '../chat/chat.service';
+import { EconomicsService } from '../economics/economics.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { REDIS } from '../redis/redis.module';
 import { LedgerService } from '../wallet/ledger.service';
@@ -22,6 +23,7 @@ export class GiftsService {
     private readonly prisma: PrismaService,
     private readonly ledger: LedgerService,
     private readonly chat: ChatService,
+    private readonly economics: EconomicsService,
     @Inject(REDIS) private readonly redis: Redis,
   ) {}
 
@@ -49,7 +51,8 @@ export class GiftsService {
     if (stream.creatorId === userId) throw new BadRequestException('cannot gift yourself');
 
     const total = gift.priceDiamonds * input.qty;
-    const { creatorCoins, feeCoins } = computeGiftSplit(total);
+    const { fees } = await this.economics.current();
+    const { creatorCoins, feeCoins } = computeSplit(total, fees.gift);
 
     const [viewerDiamonds, diamondSink, coinIssuance, creatorCoinsAcct, revenue] =
       await Promise.all([

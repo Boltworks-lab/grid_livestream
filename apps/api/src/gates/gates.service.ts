@@ -1,7 +1,8 @@
-import { computeSplit, PLATFORM_FEES } from '@grid/shared';
+import { computeSplit } from '@grid/shared';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 
+import { EconomicsService } from '../economics/economics.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { LedgerService } from '../wallet/ledger.service';
 
@@ -18,6 +19,7 @@ export class GatesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly ledger: LedgerService,
+    private readonly economics: EconomicsService,
   ) {}
 
   async unlock(userId: string, streamId: string): Promise<{ unlocked: true; diamonds: number }> {
@@ -38,7 +40,8 @@ export class GatesService {
     }
 
     const total = stream.ppvPriceDiamonds;
-    const { creatorCoins, feeCoins } = computeSplit(total, PLATFORM_FEES.ppv);
+    const { fees } = await this.economics.current();
+    const { creatorCoins, feeCoins } = computeSplit(total, fees.ppv);
     const [diamondSink, coinIssuance, creatorAcct, revenue] = await Promise.all([
       this.ledger.platformAccount('DIAMOND'),
       this.ledger.platformAccount('COIN'),

@@ -126,6 +126,33 @@ describe('LedgerService invariants (real Postgres)', () => {
     expect(await ledger.balance(a.id)).toBe(500n);
   });
 
+  it('replays return the original transaction even after the balance dropped', async () => {
+    const user = await ledger.getOrCreateAccount('USER', randomUUID(), 'DIAMOND');
+    const platform = await ledger.platformAccount('DIAMOND');
+    await ledger.post({
+      kind: 'TOPUP',
+      idempotencyKey: `seed2:${randomUUID()}`,
+      entries: [
+        { accountId: user.id, direction: 'CREDIT', amount: 100n },
+        { accountId: platform.id, direction: 'DEBIT', amount: 100n },
+      ],
+    });
+    const spendInput = {
+      kind: 'ADJUSTMENT' as const,
+      idempotencyKey: `spent:${randomUUID()}`,
+      entries: [
+        { accountId: user.id, direction: 'DEBIT' as const, amount: 80n },
+        { accountId: platform.id, direction: 'CREDIT' as const, amount: 80n },
+      ],
+    };
+    const original = await ledger.post(spendInput);
+    // balance is now 20 — a NAIVE implementation would 422 the replay because
+    // the balance check runs before the conflict is discovered
+    const replayed = await ledger.post(spendInput);
+    expect(replayed.id).toBe(original.id);
+    expect(await ledger.balance(user.id)).toBe(20n);
+  });
+
   it('row locks prevent concurrent overdraw of a user account', async () => {
     const user = await ledger.getOrCreateAccount('USER', randomUUID(), 'DIAMOND');
     const platform = await ledger.platformAccount('DIAMOND');

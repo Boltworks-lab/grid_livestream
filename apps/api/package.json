@@ -13,7 +13,9 @@
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:seed": "node prisma/seed.js",
-    "reconcile": "node dist/scripts/reconcile.js"
+    "reconcile": "node dist/scripts/reconcile.js",
+    "set-economics": "node dist/scripts/set-economics.js",
+    "approve-payout": "node dist/scripts/approve-payout.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

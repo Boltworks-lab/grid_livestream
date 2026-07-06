@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 export * from './auth';
+export * from './economics';
 export * from './gifts';
 export * from './streams';
 export * from './wallet';

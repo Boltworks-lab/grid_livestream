@@ -24,7 +24,19 @@ async function main() {
       update: { ...gift, sortOrder: index },
     });
   }
-  console.log(`seeded ${GIFTS.length} gifts`);
+  // system staff identity for script-driven admin actions (audit_log needs an
+  // actor) until the admin app ships in Phase 8; it has no login path.
+  await prisma.staffUser.upsert({
+    where: { email: 'system@grid.local' },
+    create: {
+      email: 'system@grid.local',
+      name: 'System',
+      role: 'SUPERADMIN',
+      passwordHash: '!locked!', // not a valid argon2 hash — cannot authenticate
+    },
+    update: {},
+  });
+  console.log(`seeded ${GIFTS.length} gifts + system staff user`);
   await prisma.$disconnect();
 }
 
