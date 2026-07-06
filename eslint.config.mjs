@@ -14,6 +14,8 @@ export default tseslint.config(
       '**/coverage/**',
       // plain-CJS seed/migration scripts run by the prisma CLI
       'apps/*/prisma/**',
+      // k6 load scripts run by the k6 runtime (its own globals + remote imports)
+      'load/**',
       // Prototypes are reference-only and stay untouched (PROJECT_BRIEF §13).
       'prototypes/**',
     ],

@@ -33,6 +33,7 @@
     "@socket.io/redis-adapter": "^8.3.0",
     "argon2": "^0.41.0",
     "dotenv": "^16.4.0",
+    "helmet": "^8.2.0",
     "ioredis": "^5.4.0",
     "livekit-server-sdk": "^2.9.0",
     "nestjs-pino": "^4.3.0",

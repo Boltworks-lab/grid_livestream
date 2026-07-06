@@ -8,6 +8,7 @@ import {
   Req,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import type { Request } from 'express';
 import Stripe from 'stripe';
 
@@ -15,6 +16,9 @@ import { Public } from '../auth/public.decorator';
 import { env } from '../config/env';
 import { PaymentsService } from './payments.service';
 
+// Signature-verified webhooks: never rate-limit Stripe's retry bursts, or a
+// spike of legitimate events would be dropped and payments lost.
+@SkipThrottle()
 @Public()
 @Controller('payments')
 export class PaymentsController {

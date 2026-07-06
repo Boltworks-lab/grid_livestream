@@ -12,6 +12,8 @@ concurrency:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    # The API integration suite spins its own Postgres via Testcontainers (Docker
+    # is available on ubuntu-latest), so no service containers are needed here.
     steps:
       - uses: actions/checkout@v4
 
@@ -34,3 +36,29 @@ jobs:
       - run: pnpm test
 
       - run: pnpm build
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # gitleaks needs history to scan commits
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Fail on known high/critical advisories in the dependency tree.
+      - name: Dependency audit
+        run: pnpm audit --audit-level high --prod
+
+      # Secret scanning — catch committed credentials before they ship.
+      - name: Secret scan (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

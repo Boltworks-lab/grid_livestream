@@ -1,0 +1,21 @@
+# gitleaks config (Phase 10 security-in-CI). Extends the default ruleset and
+# allowlists known non-secret placeholders so CI fails only on REAL leaks.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "placeholders and dev-only credentials that are not real secrets"
+paths = [
+  '''\.env\.example$''',
+  '''prototypes/.*''',
+]
+regexes = [
+  # documented dev-only seed credential (not a real account)
+  '''admin12345!''',
+  # obvious placeholder token shapes in docs/examples
+  '''sk_test_xxx''',
+  '''pk_test_xxx''',
+  '''whsec_xxx''',
+  '''dev-only-secret-change-me-[0-9a-f]+''',
+  '''dev-only-admin-secret-change-me-[0-9a-f]+''',
+]

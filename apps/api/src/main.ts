@@ -1,3 +1,4 @@
+import helmet from 'helmet';
 import { NestFactory } from '@nestjs/core';
 import { Logger } from 'nestjs-pino';
 
@@ -9,7 +10,10 @@ async function bootstrap() {
   // rawBody: Stripe webhook signatures verify against the exact bytes received
   const app = await NestFactory.create(AppModule, { bufferLogs: true, rawBody: true });
   app.useLogger(app.get(Logger));
-  app.enableCors({ origin: env.CORS_ORIGINS.split(',') });
+  // security headers (HSTS, nosniff, frame-deny, referrer policy). This is a JSON
+  // API — no first-party HTML — so the restrictive CSP default is fine.
+  app.use(helmet());
+  app.enableCors({ origin: env.CORS_ORIGINS.split(','), credentials: true });
   app.enableShutdownHooks();
   const ioAdapter = new RedisIoAdapter(app);
   await ioAdapter.connectToRedis();

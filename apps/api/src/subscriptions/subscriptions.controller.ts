@@ -1,5 +1,6 @@
 import { setSubPriceSchema, type SetSubPriceInput } from '@grid/shared';
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Put } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 
 import { CurrentUser, type AccessTokenPayload } from '../auth/current-user.decorator';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
@@ -30,6 +31,7 @@ export class SubscriptionsController {
     return this.subs.statusFor(user.sub, creatorId);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post(':creatorId/checkout')
   async checkout(
     @CurrentUser() user: AccessTokenPayload,
