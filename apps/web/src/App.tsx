@@ -7,11 +7,13 @@ import { AuthScreen } from './screens/AuthScreen';
 import { DiscoverScreen } from './screens/DiscoverScreen';
 import { GoLiveScreen } from './screens/GoLiveScreen';
 import { HomeScreen } from './screens/HomeScreen';
+import { InboxScreen } from './screens/InboxScreen';
 import { LiveRoomScreen } from './screens/LiveRoomScreen';
 
 function NavBar() {
   const { user, logout } = useAuth();
   const [diamonds, setDiamonds] = useState<number | null>(null);
+  const [unread, setUnread] = useState(0);
 
   useEffect(() => {
     const load = () =>
@@ -19,6 +21,14 @@ function NavBar() {
     load();
     window.addEventListener('grid:wallet-changed', load);
     return () => window.removeEventListener('grid:wallet-changed', load);
+  }, []);
+
+  useEffect(() => {
+    const poll = () =>
+      void api.GET('/notifications').then(({ data }) => data && setUnread(data.unread));
+    poll();
+    const timer = setInterval(poll, 20_000);
+    return () => clearInterval(timer);
   }, []);
 
   return (
@@ -31,9 +41,13 @@ function NavBar() {
         <NavLink to="/" end>
           Discover
         </NavLink>
+        <NavLink to="/inbox">Inbox</NavLink>
         <NavLink to="/me">Me</NavLink>
       </nav>
       <div className="nav-right">
+        <Link to="/inbox" className="bell" title="Inbox">
+          🔔{unread > 0 && <span className="badge">{unread > 9 ? '9+' : unread}</span>}
+        </Link>
         <Link to="/me" className="bal-pill" title="Wallet">
           💎 <b>{diamonds === null ? '—' : diamonds.toLocaleString()}</b>
         </Link>
@@ -60,6 +74,7 @@ export function App() {
         <Route path="/" element={<DiscoverScreen />} />
         <Route path="/stream/:id" element={<LiveRoomScreen />} />
         <Route path="/go-live" element={<GoLiveScreen />} />
+        <Route path="/inbox" element={<InboxScreen />} />
         <Route path="/me" element={<HomeScreen />} />
         <Route path="*" element={<DiscoverScreen />} />
       </Routes>

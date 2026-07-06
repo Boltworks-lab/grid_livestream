@@ -15,6 +15,7 @@ import { Throttle } from '@nestjs/throttler';
 import { z } from 'zod';
 
 import { Public } from '../auth/public.decorator';
+import { RequirePermission } from './permissions';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { PayoutsService } from '../payouts/payouts.service';
 import { AdminAuthService } from './admin-auth.service';
@@ -26,6 +27,20 @@ import type { StaffTokenPayload } from './admin-auth.service';
 const loginSchema = z.object({ email: z.string().email(), password: z.string().min(1) });
 const totpSchema = z.object({ token: z.string().min(20), code: z.string().length(6) });
 const reasonSchema = z.object({ reason: z.string().trim().min(3).max(500) });
+const createStaffSchema = z.object({
+  email: z.string().email(),
+  name: z.string().trim().min(1).max(80),
+  role: z.enum([
+    'ADMIN',
+    'MODERATOR',
+    'TECH_SUPPORT',
+    'BILLING_SUPPORT',
+    'SUPPORT',
+    'MARKETING',
+    'ANALYST',
+  ]),
+  password: z.string().min(10).max(128),
+});
 const actionSchema = z.object({
   action: z.enum(['WARN', 'MUTE', 'REMOVE_CONTENT', 'SUSPEND', 'BAN', 'SHADOWBAN']),
   reason: z.string().trim().min(3).max(500),
@@ -67,6 +82,7 @@ export class AdminController {
     private readonly payouts: PayoutsService,
   ) {}
 
+  @RequirePermission('payouts.review')
   @Get('payouts')
   async payoutQueue(@Query('status') status?: string) {
     return (await this.admin.payoutQueue(status)).map((p) => ({
@@ -80,6 +96,7 @@ export class AdminController {
     }));
   }
 
+  @RequirePermission('payouts.review')
   @Post('payouts/:id/approve')
   @HttpCode(200)
   async approvePayout(
@@ -90,6 +107,7 @@ export class AdminController {
     return { id: payout.id, status: payout.status, failureReason: payout.failureReason };
   }
 
+  @RequirePermission('payouts.review')
   @Post('payouts/:id/reject')
   @HttpCode(200)
   async rejectPayout(
@@ -101,6 +119,7 @@ export class AdminController {
     return { id: payout.id, status: payout.status };
   }
 
+  @RequirePermission('reports.act')
   @Get('reports')
   async reportQueue() {
     return (await this.admin.reportQueue()).map((r) => ({
@@ -114,6 +133,7 @@ export class AdminController {
     }));
   }
 
+  @RequirePermission('reports.act')
   @Post('reports/:id/action')
   @HttpCode(200)
   async actOnReport(
@@ -125,6 +145,7 @@ export class AdminController {
     return { id: report.id, status: report.status };
   }
 
+  @RequirePermission('reports.act')
   @Post('reports/:id/dismiss')
   @HttpCode(200)
   async dismissReport(
@@ -135,16 +156,19 @@ export class AdminController {
     return { id: report.id, status: report.status };
   }
 
+  @RequirePermission('users.lookup')
   @Get('users/lookup')
   lookupUser(@Query('q') q: string) {
     return this.admin.lookupUser((q ?? '').trim().toLowerCase());
   }
 
+  @RequirePermission('economics.edit')
   @Get('economics')
   getEconomics() {
     return this.admin.getEconomics();
   }
 
+  @RequirePermission('economics.edit')
   @Put('economics')
   updateEconomics(
     @CurrentStaff() staff: StaffTokenPayload,
@@ -153,6 +177,35 @@ export class AdminController {
     return this.admin.updateEconomics(body, staff.sub);
   }
 
+  // ── IAM: staff management (SUPERADMIN only via matrix) ────────────────────
+
+  @RequirePermission('staff.manage')
+  @Get('staff')
+  staffList() {
+    return this.admin.staffList();
+  }
+
+  @RequirePermission('staff.manage')
+  @Post('staff')
+  createStaff(
+    @CurrentStaff() staff: StaffTokenPayload,
+    @Body(new ZodValidationPipe(createStaffSchema)) body: z.infer<typeof createStaffSchema>,
+  ) {
+    return this.admin.createStaff(staff.sub, body);
+  }
+
+  // ── moderation: view gated/paywalled content (audited every call) ─────────
+
+  @RequirePermission('moderation.view_gated')
+  @Post('streams/:id/view-token')
+  moderatorViewToken(
+    @CurrentStaff() staff: StaffTokenPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+  ) {
+    return this.admin.moderatorViewToken(staff.sub, id);
+  }
+
+  @RequirePermission('audit.view')
   @Get('audit')
   async auditLog() {
     return (await this.admin.auditLog()).map((entry) => ({

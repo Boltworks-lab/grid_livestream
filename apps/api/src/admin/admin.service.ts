@@ -2,9 +2,12 @@ import { economicsSchema, type Economics } from '@grid/shared';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import type { ModAction, Prisma } from '@prisma/client';
 
+import * as argon2 from 'argon2';
+
 import { ChatService } from '../chat/chat.service';
 import { EconomicsService } from '../economics/economics.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { LivekitService } from '../streams/livekit.service';
 import { LedgerService } from '../wallet/ledger.service';
 
 /**
@@ -18,7 +21,49 @@ export class AdminService {
     private readonly ledger: LedgerService,
     private readonly economics: EconomicsService,
     private readonly chat: ChatService,
+    private readonly livekit: LivekitService,
   ) {}
+
+  // ── IAM (brief §6.1) ───────────────────────────────────────────────────────
+
+  staffList() {
+    return this.prisma.staffUser.findMany({
+      select: { id: true, email: true, name: true, role: true, status: true, lastLoginAt: true },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async createStaff(
+    actorId: string,
+    input: { email: string; name: string; role: string; password: string },
+  ) {
+    const staff = await this.prisma.staffUser.create({
+      data: {
+        email: input.email,
+        name: input.name,
+        role: input.role as never,
+        passwordHash: await argon2.hash(input.password),
+      },
+      select: { id: true, email: true, role: true },
+    });
+    await this.audit(actorId, 'staff.create', 'staff_user', staff.id, { role: input.role });
+    return staff; // TOTP enrollment happens on their first login
+  }
+
+  /**
+   * Moderator view of gated/paywalled content — subscribe-only media token
+   * WITHOUT an entitlement grant, for legally required content monitoring.
+   * EVERY use is audited: who viewed which stream, when.
+   */
+  async moderatorViewToken(staffId: string, streamId: string) {
+    const stream = await this.prisma.stream.findUnique({ where: { id: streamId } });
+    if (!stream || stream.status !== 'LIVE') throw new NotFoundException('stream is not live');
+    await this.audit(staffId, 'moderation.view_gated_stream', 'stream', streamId, {
+      access: stream.access,
+      visibility: stream.visibility,
+    });
+    return this.livekit.mintToken(stream.id, `staff:${staffId}`, 'moderation', false);
+  }
 
   // ── payouts queue ──────────────────────────────────────────────────────────
 

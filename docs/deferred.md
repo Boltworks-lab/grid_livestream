@@ -13,6 +13,22 @@ of every phase; delete entries when done. (CLAUDE.md points here.)
 | Sentry, all apps (Phase 2)                                            | DSN(s) from sentry.io                            | `SENTRY_DSN`                                                                                 |
 | Zendesk + Metabase sign-off                                           | Owner vendor/cost approval                       | ADR 0003 records the recommendation                                                          |
 
+## Phase 9 / staff-roles deferrals
+
+- **Notification delivery layers**: in-app notifications work (bell + inbox, web +
+  mobile; gift/follow hooks). Push (FCM/APNs) and email (Resend/Postmark) layer on the
+  same rows once providers are configured — owner-blocked (deferred above).
+- **Marketing CMS depth (ADR 0006)**: audience/platform _targeting evaluation_ (the
+  `audience` JSON field is stored but not yet enforced per-viewer/segment/country) and
+  the **promo redemption engine** (codes are created/listed; applying a code at
+  top-up/unlock is not wired). Fee/bonus application will post through the ledger.
+- **Per-permission staff grants** (finer than per-role), staff self-service
+  password/TOTP reset, forced-logout list (ADR 0006).
+- **VOD** (brief Phase 9): stream recording via LiveKit egress + gated playback —
+  needs LiveKit keys; the `vods` table + gated `access` field already exist.
+- **Full a11y pass + empty/error/loading states** across web & mobile (brief Phase 9)
+  — partial (loading/empty states exist on most screens).
+
 ## Phase 8 deferrals
 
 - **Dashboards** — embed Metabase (ADR 0003) once the owner approves the vendor; the

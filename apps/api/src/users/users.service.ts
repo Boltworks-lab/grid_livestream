@@ -2,6 +2,7 @@ import type { AuthUser, UpdateProfileInput } from '@grid/shared';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { toAuthUser } from '../auth/auth.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 export interface PublicProfile {
@@ -16,7 +17,10 @@ export interface PublicProfile {
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationsService,
+  ) {}
 
   async me(userId: string): Promise<AuthUser> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
@@ -69,6 +73,14 @@ export class UsersService {
         data: { followerCount: { increment: 1 } },
       });
     });
+    const follower = await this.prisma.user.findUnique({ where: { id: followerId } });
+    if (follower) {
+      await this.notifications.notify(
+        creatorId,
+        'new_follower',
+        `@${follower.handle} followed you`,
+      );
+    }
   }
 
   async unfollow(followerId: string, creatorId: string): Promise<void> {

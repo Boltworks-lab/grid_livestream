@@ -10,6 +10,6 @@ import { StreamsService } from './streams.service';
   imports: [forwardRef(() => ChatModule)],
   controllers: [StreamsController],
   providers: [StreamsService, EntitlementService, LivekitService],
-  exports: [EntitlementService],
+  exports: [EntitlementService, LivekitService],
 })
 export class StreamsModule {}

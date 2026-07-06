@@ -11,6 +11,7 @@ import { AuthScreen } from './src/screens/AuthScreen';
 import { DiscoverScreen } from './src/screens/DiscoverScreen';
 import { GoLiveScreen } from './src/screens/GoLiveScreen';
 import { HomeScreen } from './src/screens/HomeScreen';
+import { InboxScreen } from './src/screens/InboxScreen';
 import { LiveRoomScreen } from './src/screens/LiveRoomScreen';
 import { WalletScreen } from './src/screens/WalletScreen';
 
@@ -52,6 +53,7 @@ function Tabs() {
         options={{ tabBarIcon: tabIcon('🏠') }}
       />
       <Tab.Screen name="Go Live" component={GoLiveScreen} options={{ tabBarIcon: tabIcon('🔴') }} />
+      <Tab.Screen name="Inbox" component={InboxScreen} options={{ tabBarIcon: tabIcon('🔔') }} />
       <Tab.Screen name="Wallet" component={WalletScreen} options={{ tabBarIcon: tabIcon('💎') }} />
       <Tab.Screen name="Me" component={HomeScreen} options={{ tabBarIcon: tabIcon('👤') }} />
     </Tab.Navigator>

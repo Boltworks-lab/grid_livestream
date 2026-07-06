@@ -61,6 +61,7 @@ model User {
   subscribers    Subscription[]      @relation("subCreator")
   reportsFiled   Report[]
   chatMessages   ChatMessage[]
+  notifications  Notification[]
 
   @@map("users")
 }
@@ -503,6 +504,8 @@ enum StaffRole {
   SUPERADMIN
   ADMIN
   MODERATOR
+  TECH_SUPPORT
+  BILLING_SUPPORT
   SUPPORT
   MARKETING
   ANALYST
@@ -581,6 +584,70 @@ model Ticket {
 
   @@index([status, priority])
   @@map("tickets")
+}
+
+enum BannerPlacement {
+  WEB
+  MOBILE
+  ALL
+}
+
+// Marketing CMS (managed by MARKETING staff): ad banners with time windows and
+// audience/platform targeting. Targeting rules stay JSON until fleshed out.
+model MarketingBanner {
+  id               String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title            String
+  body             String?
+  imageUrl         String?
+  linkUrl          String?
+  placement        BannerPlacement @default(ALL)
+  audience         Json? // targeting rules (segments, countries, ...) — evolves
+  startsAt         DateTime?
+  endsAt           DateTime?
+  active           Boolean         @default(true)
+  createdByStaffId String?         @db.Uuid
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([active, placement])
+  @@map("marketing_banners")
+}
+
+enum PromoKind {
+  PERCENT_OFF
+  BONUS_DIAMONDS
+}
+
+model PromoCode {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  code             String    @unique
+  kind             PromoKind
+  value            Int // percent (1-100) or bonus diamond amount
+  startsAt         DateTime?
+  endsAt           DateTime?
+  maxRedemptions   Int?
+  redemptionCount  Int       @default(0)
+  active           Boolean   @default(true)
+  createdByStaffId String?   @db.Uuid
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@map("promo_codes")
+}
+
+// In-app notifications (Phase 9); push/email delivery layers on later.
+model Notification {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String    @db.Uuid
+  user      User      @relation(fields: [userId], references: [id])
+  kind      String // gift_received | new_follower | ...
+  body      String
+  data      Json?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, createdAt])
+  @@map("notifications")
 }
 
 // Feature flags, banners, remote config (admin-managed, mobile reads at launch)

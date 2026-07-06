@@ -67,6 +67,14 @@ Read PROJECT_BRIEF.md first; it is the authoritative spec. This file is the quic
   sources (ADR 0004); web live room mounts a LiveKit stage with per-source
   toggles for creators and screen-share-first layout for viewers — activates
   with the owner's LiveKit keys.
+- **Staff roles & permissions (ADR 0006)**: permission matrix in
+  apps/api/src/admin/permissions.ts; endpoints declare @RequirePermission, AdminGuard
+  enforces per-role. Roles: SUPERADMIN/ADMIN/MODERATOR/TECH_SUPPORT/BILLING_SUPPORT/
+  SUPPORT/MARKETING/ANALYST. Moderator holds `moderation.view_gated` — audited
+  view-only token for paywalled content (legal monitoring). Admin app: Staff CRUD +
+  Marketing CMS (banners/promos with time windows; targeting JSON scaffolded) tabs.
+- **Phase 9 partial**: in-app notifications (module + gift/follow hooks + bell/inbox
+  on web & mobile). Push/email/VOD deferred (providers + LiveKit keys). Verified 20/20.
 - **docs/deferred.md is the skip ledger** — every intentionally skipped item lives
   there. Add to it when skipping; review it at each phase boundary.
 - Remote: `github.com/Boltworks-lab/grid_livestream` (repo-scoped credential —

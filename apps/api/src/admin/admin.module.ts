@@ -1,16 +1,23 @@
 import { Module } from '@nestjs/common';
 
 import { ChatModule } from '../chat/chat.module';
+import { StreamsModule } from '../streams/streams.module';
 import { PayoutsModule } from '../payouts/payouts.module';
 import { WalletModule } from '../wallet/wallet.module';
 import { AdminAuthService } from './admin-auth.service';
 import { AdminAuthController, AdminController } from './admin.controller';
 import { AdminGuard } from './admin.guard';
 import { AdminService } from './admin.service';
+import { MarketingAdminController, MarketingPublicController } from './marketing.controller';
 
 @Module({
-  imports: [WalletModule, PayoutsModule, ChatModule],
-  controllers: [AdminAuthController, AdminController],
+  imports: [WalletModule, PayoutsModule, ChatModule, StreamsModule],
+  controllers: [
+    AdminAuthController,
+    AdminController,
+    MarketingAdminController,
+    MarketingPublicController,
+  ],
   providers: [AdminAuthService, AdminGuard, AdminService],
 })
 export class AdminModule {}

@@ -46,6 +46,65 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Health' }
 
+  # ── notifications (Phase 9) ─────────────────────────────────────────────────
+  /notifications:
+    get:
+      tags: [notifications]
+      summary: In-app notifications for the caller (unread count + recent items)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [unread, items]
+                properties:
+                  unread: { type: integer }
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, kind, body, read, createdAt]
+                      properties:
+                        id: { type: string, format: uuid }
+                        kind: { type: string }
+                        body: { type: string }
+                        read: { type: boolean }
+                        createdAt: { type: string, format: date-time }
+  /notifications/read-all:
+    post:
+      tags: [notifications]
+      summary: Mark all notifications read
+      responses:
+        '204': { description: Marked read }
+
+  # ── marketing (public banners) ──────────────────────────────────────────────
+  /marketing/banners:
+    get:
+      security: []
+      tags: [notifications]
+      summary: Active banners for a placement (WEB/MOBILE)
+      parameters:
+        - { name: placement, in: query, schema: { type: string, enum: [WEB, MOBILE] } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [id, title, placement]
+                  properties:
+                    id: { type: string, format: uuid }
+                    title: { type: string }
+                    body: { type: [string, 'null'] }
+                    imageUrl: { type: [string, 'null'] }
+                    linkUrl: { type: [string, 'null'] }
+                    placement: { type: string }
+
   # ── auth (Phase 2) ─────────────────────────────────────────────────────────
   /auth/register:
     post:

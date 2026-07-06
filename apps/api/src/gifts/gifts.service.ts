@@ -4,6 +4,7 @@ import Redis from 'ioredis';
 
 import { ChatService } from '../chat/chat.service';
 import { EconomicsService } from '../economics/economics.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { REDIS } from '../redis/redis.module';
 import { LedgerService } from '../wallet/ledger.service';
@@ -24,6 +25,7 @@ export class GiftsService {
     private readonly ledger: LedgerService,
     private readonly chat: ChatService,
     private readonly economics: EconomicsService,
+    private readonly notifications: NotificationsService,
     @Inject(REDIS) private readonly redis: Redis,
   ) {}
 
@@ -93,6 +95,12 @@ export class GiftsService {
       });
       combo = await this.bumpCombo(streamId, userId, gift.id);
       await this.redis.zincrby(`topgifters:${streamId}`, total, userId);
+      await this.notifications.notify(
+        stream.creatorId,
+        'gift_received',
+        `@${handle} sent ${gift.name} ${gift.emoji ?? ''} (+${creatorCoins} coins)`,
+        { streamId, giftId: gift.id, qty: input.qty },
+      );
       this.chat.broadcastGift({
         streamId,
         giftId: gift.id,
