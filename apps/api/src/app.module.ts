@@ -14,6 +14,7 @@ import { GatesModule } from './gates/gates.module';
 import { PayoutsModule } from './payouts/payouts.module';
 import { GiftsModule } from './gifts/gifts.module';
 import { HealthController } from './health/health.controller';
+import { ModerationModule } from './moderation/moderation.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PaymentsModule } from './payments/payments.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -41,6 +42,7 @@ import { WalletModule } from './wallet/wallet.module';
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 120 }]),
     PrismaModule,
     RedisModule,
+    ModerationModule,
     NotificationsModule,
     EconomicsModule,
     AuthModule,

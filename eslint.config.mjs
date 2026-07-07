@@ -23,6 +23,12 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    rules: {
+      // allow intentionally-unused args when prefixed with _ (e.g. drop-in stubs)
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
+  },
+  {
     languageOptions: {
       globals: { ...globals.node, ...globals.es2022 },
     },

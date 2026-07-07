@@ -100,6 +100,37 @@ export class ChatService {
     return count <= 5;
   }
 
+  // ── creator moderation tools (brief §8) ─────────────────────────────────────
+
+  /** Creator mutes a viewer in their stream for N minutes. */
+  async muteUser(streamId: string, userId: string, minutes: number): Promise<void> {
+    await this.redis.set(`chat:muted:${streamId}:${userId}`, '1', 'EX', minutes * 60);
+  }
+
+  async unmuteUser(streamId: string, userId: string): Promise<void> {
+    await this.redis.del(`chat:muted:${streamId}:${userId}`);
+  }
+
+  async isMuted(streamId: string, userId: string): Promise<boolean> {
+    return (await this.redis.exists(`chat:muted:${streamId}:${userId}`)) === 1;
+  }
+
+  /** Creator sets slow-mode (seconds between messages); 0 disables. */
+  async setSlowMode(streamId: string, seconds: number): Promise<void> {
+    if (seconds <= 0) await this.redis.del(`chat:slowmode:${streamId}`);
+    else await this.redis.set(`chat:slowmode:${streamId}`, seconds);
+  }
+
+  /** Returns null if the send is allowed, or the seconds the user must wait. */
+  async slowModeWait(streamId: string, userId: string): Promise<number | null> {
+    const seconds = Number((await this.redis.get(`chat:slowmode:${streamId}`)) ?? 0);
+    if (seconds <= 0) return null;
+    const key = `chat:slow:${streamId}:${userId}`;
+    const set = await this.redis.set(key, '1', 'EX', seconds, 'NX');
+    if (set === 'OK') return null; // first message this window
+    return (await this.redis.ttl(key)) || seconds;
+  }
+
   private maybeBroadcastCount(streamId: string, count: number): void {
     const now = Date.now();
     const last = this.lastCountBroadcast.get(streamId) ?? 0;

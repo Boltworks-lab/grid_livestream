@@ -15,6 +15,7 @@ export const PERMISSIONS = [
   'economics.edit', // fee rates, coin peg, payout params
   'marketing.manage', // banners, promos, discount codes, targeting
   'moderation.view_gated', // view paywalled/hidden content FOR MODERATION (audited; legal monitoring)
+  'moderation.config', // edit the automated-moderation filter (add/remove/reclassify terms)
   'audit.view',
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
@@ -24,7 +25,7 @@ const ALL = [...PERMISSIONS] as Permission[];
 export const ROLE_PERMISSIONS: Record<StaffRole, Permission[]> = {
   SUPERADMIN: ALL,
   ADMIN: ALL.filter((p) => p !== 'staff.manage'),
-  MODERATOR: ['reports.act', 'moderation.view_gated', 'users.lookup'],
+  MODERATOR: ['reports.act', 'moderation.view_gated', 'moderation.config', 'users.lookup'],
   TECH_SUPPORT: ['users.lookup', 'audit.view'],
   BILLING_SUPPORT: ['payouts.review', 'users.lookup'],
   SUPPORT: ['users.lookup'],

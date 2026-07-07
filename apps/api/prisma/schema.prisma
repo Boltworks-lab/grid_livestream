@@ -458,8 +458,8 @@ enum ReportStatus {
 
 model Report {
   id              String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  reporterId      String       @db.Uuid
-  reporter        User         @relation(fields: [reporterId], references: [id])
+  reporterId      String?      @db.Uuid // null = system/auto-moderation
+  reporter        User?        @relation(fields: [reporterId], references: [id])
   targetType      TargetType
   targetId        String
   reason          String

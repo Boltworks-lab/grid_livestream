@@ -48,6 +48,22 @@ async function main() {
     },
     update: {},
   });
+  // default automated-moderation config (brief §8). Deliberately tiny + editable:
+  // staff add/remove/reclassify terms in the admin app. 'block' = withheld,
+  // 'flag' = allowed but queued for a human. Examples only — tune per community.
+  await prisma.appConfig.upsert({
+    where: { key: 'moderation' },
+    create: {
+      key: 'moderation',
+      value: {
+        enabled: true,
+        terms: { kill_yourself: 'block', slur_example: 'block', spammyword: 'flag' },
+        allow: [],
+        mlThresholds: { harassment: 0.9, hate: 0.85, sexual: 0.9, selfHarm: 0.8, violence: 0.9 },
+      },
+    },
+    update: {},
+  });
   console.log(`seeded ${GIFTS.length} gifts + system/admin staff users`);
   await prisma.$disconnect();
 }

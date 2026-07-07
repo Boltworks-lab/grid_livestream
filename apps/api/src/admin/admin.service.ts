@@ -1,4 +1,4 @@
-import { economicsSchema, type Economics } from '@grid/shared';
+import { economicsSchema, type Economics, type ModerationConfig } from '@grid/shared';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import type { ModAction, Prisma } from '@prisma/client';
 
@@ -6,6 +6,7 @@ import * as argon2 from 'argon2';
 
 import { ChatService } from '../chat/chat.service';
 import { EconomicsService } from '../economics/economics.service';
+import { ModerationService } from '../moderation/moderation.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { LivekitService } from '../streams/livekit.service';
 import { LedgerService } from '../wallet/ledger.service';
@@ -22,6 +23,7 @@ export class AdminService {
     private readonly economics: EconomicsService,
     private readonly chat: ChatService,
     private readonly livekit: LivekitService,
+    private readonly moderation: ModerationService,
   ) {}
 
   // ── IAM (brief §6.1) ───────────────────────────────────────────────────────
@@ -207,6 +209,22 @@ export class AdminService {
 
   getEconomics() {
     return this.economics.current();
+  }
+
+  // ── automated moderation filter (brief §8) ───────────────────────────────
+
+  getModerationConfig() {
+    return this.moderation.config();
+  }
+
+  async updateModerationConfig(value: ModerationConfig, staffId: string) {
+    const before = await this.moderation.config();
+    const saved = await this.moderation.setConfig(value);
+    await this.audit(staffId, 'moderation.config.update', 'app_config', 'moderation', {
+      before: before as unknown as Prisma.InputJsonValue,
+      after: saved as unknown as Prisma.InputJsonValue,
+    });
+    return saved;
   }
 
   async updateEconomics(value: Economics, staffId: string) {

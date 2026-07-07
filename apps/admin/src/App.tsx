@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { adminApi, staffToken } from './lib/api';
 import { MarketingTab } from './tabs/MarketingTab';
+import { ModerationTab } from './tabs/ModerationTab';
 import { StaffTab } from './tabs/StaffTab';
 
 type LoginStep =
@@ -100,7 +101,16 @@ function LoginScreen({ onAuthed }: { onAuthed: () => void }) {
   );
 }
 
-const TABS = ['Payouts', 'Reports', 'Users', 'Staff', 'Marketing', 'Economics', 'Audit'] as const;
+const TABS = [
+  'Payouts',
+  'Reports',
+  'Moderation',
+  'Users',
+  'Staff',
+  'Marketing',
+  'Economics',
+  'Audit',
+] as const;
 type Tab = (typeof TABS)[number];
 
 interface PayoutRow {
@@ -149,6 +159,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         {tab === 'Payouts' && <PayoutsTab />}
         {tab === 'Reports' && <ReportsTab />}
         {tab === 'Users' && <UsersTab />}
+        {tab === 'Moderation' && <ModerationTab />}
         {tab === 'Staff' && <StaffTab />}
         {tab === 'Marketing' && <MarketingTab />}
         {tab === 'Economics' && <EconomicsTab />}

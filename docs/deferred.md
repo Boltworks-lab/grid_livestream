@@ -36,8 +36,13 @@ of every phase; delete entries when done. (CLAUDE.md points here.)
 - **IAM completeness** — staff CRUD, role-based permission matrix (only SUPERADMIN
   exists meaningfully), forced logout/session list. Roles are IN the token; per-role
   authorization checks land with staff CRUD.
-- **Automated moderation (§8)** — chat keyword/ML filter, stream frame sampling,
-  upload scanning; the human queue works, automation feeds it later.
+- **Automated moderation (§8) — chat keyword DONE**: runtime-editable severity list
+  (add/remove/reclassify in the admin Moderation tab), evasion-resistant normalization,
+  flag-for-review-first (only 'block' withheld pre-broadcast), auto-flag → system report
+  in the queue, creator mute + slow-mode. Owner-blocked drop-ins: **ML text moderation**
+  (OpenAI Moderation / Perspective key → screenMl adapter) and **image/video** (stream
+  frame sampling + upload/VOD scan via Rekognition/Hive/SafeSearch). Both slot behind
+  the existing interface + queue with zero rework.
 - **Content/config management** — gift catalog CRUD, banners, featured, categories
   (admin edits economics only so far).
 - **Marketing tools** (§6.6) — campaigns, promo codes, referrals.

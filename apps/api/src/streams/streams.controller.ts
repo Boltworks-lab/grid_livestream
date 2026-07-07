@@ -1,4 +1,11 @@
-import { createStreamSchema, type CreateStreamInput } from '@grid/shared';
+import {
+  createStreamSchema,
+  muteSchema,
+  slowModeSchema,
+  type CreateStreamInput,
+  type MuteInput,
+  type SlowModeInput,
+} from '@grid/shared';
 import {
   Body,
   Controller,
@@ -85,6 +92,46 @@ export class StreamsController {
     // full staff moderation arrives in Phase 8; creators moderate their own room
     if (stream.creatorId !== user.sub) throw new ForbiddenException('not your stream');
     await this.chat.removeMessage(id, messageId);
+  }
+
+  /** Creator mutes a viewer in their own stream (brief §8). */
+  @Post(':id/mute')
+  @HttpCode(204)
+  async mute(
+    @CurrentUser() user: AccessTokenPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodValidationPipe(muteSchema)) body: MuteInput,
+  ) {
+    await this.assertOwner(id, user.sub);
+    await this.chat.muteUser(id, body.userId, body.minutes);
+  }
+
+  @Delete(':id/mute/:userId')
+  @HttpCode(204)
+  async unmute(
+    @CurrentUser() user: AccessTokenPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('userId', ParseUUIDPipe) userId: string,
+  ) {
+    await this.assertOwner(id, user.sub);
+    await this.chat.unmuteUser(id, userId);
+  }
+
+  /** Creator sets slow-mode (seconds between messages; 0 disables). */
+  @Post(':id/slow-mode')
+  @HttpCode(204)
+  async slowMode(
+    @CurrentUser() user: AccessTokenPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodValidationPipe(slowModeSchema)) body: SlowModeInput,
+  ) {
+    await this.assertOwner(id, user.sub);
+    await this.chat.setSlowMode(id, body.seconds);
+  }
+
+  private async assertOwner(streamId: string, userId: string): Promise<void> {
+    const stream = await this.streams.byId(streamId);
+    if (stream.creatorId !== userId) throw new ForbiddenException('not your stream');
   }
 
   private async optionalUserId(req: Request): Promise<string | null> {

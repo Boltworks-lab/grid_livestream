@@ -321,6 +321,48 @@ paths:
         - { name: messageId, in: path, required: true, schema: { type: string } }
       responses:
         '204': { description: Hidden and broadcast as removed }
+  /streams/{id}/mute:
+    post:
+      tags: [streams]
+      summary: 'Creator moderation: mute a viewer in your stream for N minutes'
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, minutes]
+              properties:
+                userId: { type: string, format: uuid }
+                minutes: { type: integer, minimum: 1, maximum: 1440 }
+      responses:
+        '204': { description: Muted }
+  /streams/{id}/mute/{userId}:
+    delete:
+      tags: [streams]
+      summary: 'Creator moderation: unmute a viewer'
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: userId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '204': { description: Unmuted }
+  /streams/{id}/slow-mode:
+    post:
+      tags: [streams]
+      summary: 'Creator moderation: set slow-mode seconds (0 disables)'
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [seconds]
+              properties:
+                seconds: { type: integer, minimum: 0, maximum: 300 }
+      responses:
+        '204': { description: Slow-mode set }
   /streams/{id}/end:
     post:
       tags: [streams]

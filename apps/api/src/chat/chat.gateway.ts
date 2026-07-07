@@ -14,6 +14,7 @@ import type { Server, Socket } from 'socket.io';
 
 import type { AccessTokenPayload } from '../auth/current-user.decorator';
 import { env } from '../config/env';
+import { ModerationService } from '../moderation/moderation.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { EntitlementService } from '../streams/entitlement.service';
 import { ChatService } from './chat.service';
@@ -44,6 +45,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     private readonly chat: ChatService,
     private readonly prisma: PrismaService,
     private readonly entitlement: EntitlementService,
+    private readonly moderation: ModerationService,
   ) {}
 
   afterInit(server: Server) {
@@ -128,7 +130,15 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     if (!(await this.chat.allowMessage(data.user.sub))) {
       return { ok: false, error: 'slow down' };
     }
+    // creator moderation: mute + slow-mode (brief §8)
+    if (await this.chat.isMuted(streamId, data.user.sub)) {
+      return { ok: false, error: 'you are muted in this stream' };
+    }
+    const wait = await this.chat.slowModeWait(streamId, data.user.sub);
+    if (wait !== null) return { ok: false, error: `slow mode: wait ${wait}s` };
 
+    // automated moderation — flag-for-review by default; only 'block' is withheld
+    const verdict = await this.moderation.screen(text);
     const message: ChatMessage = {
       streamId,
       messageId: this.chat.mintMessageId(),
@@ -138,7 +148,28 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       body: text,
       sentAt: new Date().toISOString(),
     };
+
+    if (verdict.action === 'block') {
+      // never broadcast; file a system report so staff see (and can tune) it
+      await this.moderation.recordAuto({
+        verdict,
+        messageId: message.messageId,
+        senderId: data.user.sub,
+        body: text,
+      });
+      return { ok: false, error: 'message blocked by moderation' };
+    }
+
     await this.chat.publishMessage(message);
+    if (verdict.action === 'flag') {
+      // allowed + broadcast, but queued for a human to make the nuanced call
+      void this.moderation.recordAuto({
+        verdict,
+        messageId: message.messageId,
+        senderId: data.user.sub,
+        body: text,
+      });
+    }
     return { ok: true };
   }
 }

@@ -83,6 +83,13 @@ Read PROJECT_BRIEF.md first; it is the authoritative spec. This file is the quic
   Marketing CMS (banners/promos with time windows; targeting JSON scaffolded) tabs.
 - **Phase 9 partial**: in-app notifications (module + gift/follow hooks + bell/inbox
   on web & mobile). Push/email/VOD deferred (providers + LiveKit keys). Verified 20/20.
+- **Automated chat moderation (§8, keyword tier live)**: ModerationService screens
+  every `chat:send` against a runtime-editable severity list (app_config `moderation`,
+  30s cache) — normalize→match; block withheld pre-broadcast, flag broadcast + system
+  report to the queue, allow untouched. Evasion-resistant (leet/zero-width/homoglyph).
+  Creator mute + slow-mode (Redis). Admin Moderation tab edits/removes terms
+  (permission `moderation.config`, audited). ML text + image/video are drop-ins behind
+  screenMl + the queue (owner-blocked on a provider key). Verified 12/12.
 - **docs/deferred.md is the skip ledger** — every intentionally skipped item lives
   there. Add to it when skipping; review it at each phase boundary.
 - Remote: `github.com/Boltworks-lab/grid_livestream` (repo-scoped credential —

@@ -1,4 +1,9 @@
-import { economicsSchema, type Economics } from '@grid/shared';
+import {
+  economicsSchema,
+  moderationConfigSchema,
+  type Economics,
+  type ModerationConfig,
+} from '@grid/shared';
 import {
   Body,
   Controller,
@@ -124,7 +129,7 @@ export class AdminController {
   async reportQueue() {
     return (await this.admin.reportQueue()).map((r) => ({
       id: r.id,
-      reporterHandle: r.reporter.handle,
+      reporterHandle: r.reporter?.handle ?? 'system (auto)',
       targetType: r.targetType,
       targetId: r.targetId,
       reason: r.reason,
@@ -203,6 +208,23 @@ export class AdminController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.admin.moderatorViewToken(staff.sub, id);
+  }
+
+  // ── automated-moderation filter (editable; add/REMOVE/reclassify terms) ────
+
+  @RequirePermission('moderation.config')
+  @Get('moderation/config')
+  getModerationConfig() {
+    return this.admin.getModerationConfig();
+  }
+
+  @RequirePermission('moderation.config')
+  @Put('moderation/config')
+  updateModerationConfig(
+    @CurrentStaff() staff: StaffTokenPayload,
+    @Body(new ZodValidationPipe(moderationConfigSchema)) body: ModerationConfig,
+  ) {
+    return this.admin.updateModerationConfig(body, staff.sub);
   }
 
   @RequirePermission('audit.view')
