@@ -91,9 +91,10 @@ mobile diamond purchases / subscriptions work end-to-end:
   tokens; the web live room mounts the multi-source LiveStage (camera/mic/screen for
   creators, subscribe-first grid for viewers). Still to wire: the `room_finished`
   webhook (auto-end streams on empty) and `RemoveParticipant` on ban/refund.
-- **LiveKit player — web DONE** (LiveStage mounts @livekit/components-react). **Mobile
-  pending**: `@livekit/react-native` needs a custom dev build (not Expo Go), so mobile
-  video publish/subscribe waits on an EAS dev-client build.
+- **LiveKit player — web DONE; mobile WIRED** (LiveStage in apps/mobile/src/live).
+  Native modules + EAS config (eas.json, config plugins) are in place and verified
+  (prebuild + Metro bundle). Remaining owner step: run `eas build --profile development`
+  and install the dev client (docs/runbooks/mobile-dev-build.md) — then mobile video is live.
 - **Mobile like/share rail buttons** — prototype's action rail shipped with
   chevrons/gift/end; like + share are cosmetic placeholders to add.
 - **Playwright e2e for the web flows** (signup → go live → chat → gift) — brief §10.

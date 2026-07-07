@@ -20,6 +20,7 @@ import {
 import type { Socket } from 'socket.io-client';
 
 import { useAuth } from '../auth/AuthContext';
+import { LiveStage } from '../live/LiveStage';
 import { api } from '../lib/api';
 import { connectRealtime, emitWithAck } from '../lib/realtime';
 import type { RootStackParamList } from '../navigation';
@@ -66,6 +67,7 @@ export function LiveRoomScreen() {
   const [input, setInput] = useState('');
   const [unlockMsg, setUnlockMsg] = useState<string | null>(null);
   const [unlockBusy, setUnlockBusy] = useState(false);
+  const [media, setMedia] = useState<{ token: string; url: string } | null>(null);
   const socketRef = useRef<Socket | null>(null);
 
   const isCreator = stream !== null && user !== null && stream.creatorId === user.id;
@@ -94,6 +96,16 @@ export function LiveRoomScreen() {
     const { data } = await api.GET('/streams/{id}', { params: { path: { id: streamId } } });
     if (data) setStream(data as StreamSummary);
   }, [streamId]);
+
+  // media token — proves the §3.4 gate; LiveStage mounts it in a dev build
+  useEffect(() => {
+    if (!stream?.entitled || stream.status !== 'LIVE') return;
+    void api
+      .POST('/streams/{id}/token', { params: { path: { id: streamId } } })
+      .then(({ data, response }) => {
+        if (response.ok && data) setMedia(data as { token: string; url: string });
+      });
+  }, [stream?.entitled, stream?.status, streamId]);
 
   useEffect(() => {
     void loadStream();
@@ -234,11 +246,15 @@ export function LiveRoomScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       {...pan.panHandlers}
     >
-      {/* full-bleed “video” background; LiveKit view mounts here once keys exist */}
+      {/* full-bleed video; LiveStage mounts the LiveKit room in a dev build */}
       <View style={styles.videoBg}>
-        <Text style={styles.videoHint}>
-          {ended ? 'Stream ended' : 'Video activates with LiveKit keys — chat is live'}
-        </Text>
+        {ended ? (
+          <Text style={styles.videoHint}>Stream ended</Text>
+        ) : media ? (
+          <LiveStage token={media.token} url={media.url} isCreator={isCreator} />
+        ) : (
+          <Text style={styles.videoHint}>Connecting… chat is live</Text>
+        )}
       </View>
 
       {floats.map((f) => (

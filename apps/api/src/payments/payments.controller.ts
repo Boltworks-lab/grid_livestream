@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Headers,
   HttpCode,
@@ -7,6 +8,7 @@ import {
   RawBodyRequest,
   Req,
   ServiceUnavailableException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import type { Request } from 'express';
@@ -52,6 +54,24 @@ export class PaymentsController {
     }
 
     await this.payments.handleStripeEvent(event);
+    return { received: true };
+  }
+
+  @Post('webhooks/revenuecat')
+  @HttpCode(200)
+  async revenueCatWebhook(
+    @Body() body: { event?: Record<string, unknown> },
+    @Headers('authorization') auth?: string,
+  ) {
+    if (!env.REVENUECAT_WEBHOOK_AUTH) {
+      throw new ServiceUnavailableException('revenuecat webhook is not configured');
+    }
+    // RevenueCat sends the exact Authorization header value you set in its dashboard
+    if (auth !== env.REVENUECAT_WEBHOOK_AUTH) {
+      throw new UnauthorizedException('invalid revenuecat authorization');
+    }
+    if (!body?.event) throw new BadRequestException('missing event');
+    await this.payments.handleRevenueCatEvent(body.event);
     return { received: true };
   }
 }

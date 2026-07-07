@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { AuthProvider, useAuth } from './src/auth/AuthContext';
+import { initMobileSentry } from './src/lib/sentry';
 import type { RootStackParamList } from './src/navigation';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { DiscoverScreen } from './src/screens/DiscoverScreen';
@@ -14,6 +15,8 @@ import { HomeScreen } from './src/screens/HomeScreen';
 import { InboxScreen } from './src/screens/InboxScreen';
 import { LiveRoomScreen } from './src/screens/LiveRoomScreen';
 import { WalletScreen } from './src/screens/WalletScreen';
+
+initMobileSentry();
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator<RootStackParamList>();

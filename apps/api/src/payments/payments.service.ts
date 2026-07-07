@@ -48,26 +48,65 @@ export class PaymentsService {
       throw new BadRequestException(`checkout ${session.id} missing/unknown metadata`);
     }
 
+    await this.creditDiamonds(userId, pack.id, `stripe_session:${session.id}`, {
+      provider: 'stripe',
+      sessionId: session.id,
+      usdCents: pack.usdCents,
+    });
+  }
+
+  /**
+   * RevenueCat webhook (mobile IAP, §3.3). Same contract as Stripe: verified
+   * (Authorization header) upstream, credited exactly once here. The store
+   * product id maps to a diamond package by id (set the RevenueCat product id
+   * to the package id, e.g. "d1000"); idempotent on the RevenueCat event id.
+   */
+  async handleRevenueCatEvent(event: {
+    id?: string;
+    type?: string;
+    app_user_id?: string;
+    product_id?: string;
+  }): Promise<void> {
+    const CREDIT_TYPES = new Set(['INITIAL_PURCHASE', 'NON_RENEWING_PURCHASE', 'RENEWAL']);
+    if (!event.type || !CREDIT_TYPES.has(event.type)) {
+      this.logger.debug(`ignoring revenuecat event ${event.type}`);
+      return;
+    }
+    const userId = event.app_user_id;
+    const pack = DIAMOND_PACKAGES.find((p) => p.id === event.product_id);
+    if (!userId || !pack || !event.id) {
+      throw new BadRequestException(`revenuecat event ${event.id} missing/unknown fields`);
+    }
+    await this.creditDiamonds(userId, pack.id, `revenuecat_event:${event.id}`, {
+      provider: 'revenuecat',
+      eventId: event.id,
+      productId: pack.id,
+    });
+  }
+
+  /** Shared crediting path — the only place diamonds are minted (§3.1/§3.3). */
+  private async creditDiamonds(
+    userId: string,
+    packageId: string,
+    idempotencyKey: string,
+    metadata: Record<string, string | number>,
+  ): Promise<void> {
+    const pack = DIAMOND_PACKAGES.find((p) => p.id === packageId);
+    if (!pack) throw new BadRequestException(`unknown package ${packageId}`);
     const amount = BigInt(pack.diamonds + pack.bonus);
     const [userAccount, issuance] = await Promise.all([
       this.ledger.getOrCreateAccount('USER', userId, 'DIAMOND'),
       this.ledger.platformAccount('DIAMOND'),
     ]);
-
     await this.ledger.post({
       kind: 'TOPUP',
-      idempotencyKey: `stripe_session:${session.id}`,
-      metadata: {
-        provider: 'stripe',
-        sessionId: session.id,
-        packageId: pack.id,
-        usdCents: pack.usdCents,
-      },
+      idempotencyKey,
+      metadata: { ...metadata, packageId: pack.id },
       entries: [
         { accountId: userAccount.id, direction: 'CREDIT', amount },
         { accountId: issuance.id, direction: 'DEBIT', amount },
       ],
     });
-    this.logger.log(`credited ${amount} diamonds to user ${userId} (session ${session.id})`);
+    this.logger.log(`credited ${amount} diamonds to user ${userId} (${idempotencyKey})`);
   }
 }
